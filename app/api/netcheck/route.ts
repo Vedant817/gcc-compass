@@ -7,6 +7,8 @@ export async function GET() {
   const out: Record<string, unknown> = {};
   out.env = {
     key: Boolean(process.env.LLM_API_KEY),
+    keyLen: process.env.LLM_API_KEY?.length ?? 0,
+    keyHead: process.env.LLM_API_KEY?.slice(0, 6) ?? "",
     base: process.env.LLM_BASE_URL,
     model: process.env.LLM_MODEL,
     fallback: process.env.LLM_FALLBACK_MODELS,
