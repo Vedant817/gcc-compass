@@ -5,6 +5,7 @@ import { CitationChip } from "@/components/CitationChip";
 import { Button } from "@/components/ui/button";
 import { SiteLinkFlag } from "@/components/ui/badge";
 import { readOverlay, readStoredPlan } from "@/lib/overlay";
+import { renderInline } from "@/lib/markdown";
 import type { NavigatorInputs } from "@/lib/types";
 
 interface Citation {
@@ -217,15 +218,6 @@ export function AnswerBody({ text }: { text: string }) {
       })}
     </div>
   );
-}
-
-export function renderInline(text: string): React.ReactNode[] {
-  const parts = text.split(/(\[(?:f\d[\w]*|pol_[\w]+)\])/g);
-  return parts.map((part, i) => {
-    const m = /^\[((?:f\d[\w]*|pol_[\w]+))\]$/.exec(part);
-    if (m) return <CitationChip key={i} id={m[1]} />;
-    return <span key={i}>{part}</span>;
-  });
 }
 
 function CitationFooter({ citations }: { citations: Citation[] }) {

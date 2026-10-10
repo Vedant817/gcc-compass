@@ -16,6 +16,7 @@ import { RegistryView } from "@/lib/registry";
 import { readOverlay } from "@/lib/overlay";
 import type { Fact } from "@/lib/types";
 import { ConfidenceBadge, SiteLinkFlag, UnverifiedBadge } from "@/components/ui/badge";
+import { renderInline } from "@/lib/markdown";
 import { CitationChip } from "@/components/CitationChip";
 import { Card, EmptyState, SkeletonRows, Table, Td, Th, Tr } from "@/components/ui/table";
 import { factValue, inrNum } from "@/lib/format";
@@ -221,7 +222,7 @@ export function TruthView({ presets }: { presets: TruthPreset[] }) {
               <BarChart
                 layout="vertical"
                 data={bars}
-                margin={{ top: 4, right: 96, bottom: 24, left: 8 }}
+                margin={{ top: 4, right: 132, bottom: 24, left: 8 }}
                 barCategoryGap="22%"
               >
                 <CartesianGrid horizontal={false} stroke="#E9ECEF" />
@@ -440,12 +441,7 @@ function WhyNote({ factIds }: { factIds: string[] }) {
 }
 
 export function renderWithChips(text: string) {
-  const parts = text.split(/(\[(?:f\d[\w]*|pol_[\w]+)\])/g);
-  return parts.map((part, i) => {
-    const m = /^\[((?:f\d[\w]*|pol_[\w]+))\]$/.exec(part);
-    if (m) return <CitationChip key={i} id={m[1]} />;
-    return <span key={i}>{part}</span>;
-  });
+  return renderInline(text);
 }
 
 

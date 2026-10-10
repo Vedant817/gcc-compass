@@ -40,7 +40,11 @@ check("truth headline 7 sources 1,700 to 2,000 spread 18%", /7 sources/.test(hea
 await page.waitForSelector("section:has-text('Why they differ') p");
 await page.waitForTimeout(2500); // why-they-differ note
 const note = await page.locator("section:has-text('Why they differ') p").first().textContent();
-check("why-they-differ note rendered", (note || "").length > 40, (note || "").slice(0, 90));
+check(
+  "why-they-differ note rendered",
+  (note || "").length > 40 && !/^Couldn't write/.test(note || ""),
+  (note || "").slice(0, 90),
+);
 const barTicks = await page.locator(".recharts-cartesian-axis-tick-value").allTextContents();
 check("truth axis labels are publisher + date", barTicks.some((t) => /nasscom-Zinnov/.test(t)) && barTicks.some((t) => /FY2024/.test(t)));
 const barLabels = await page.locator(".recharts-label-list text").allTextContents();
@@ -76,6 +80,8 @@ const firstRow = await page.locator("section:has-text('City ranking') tbody tr")
 check("rank 1 is Pune", /Pune/.test(firstRow), firstRow.replace(/\n/g, " "));
 const flexRow = await page.locator("section:has-text('Who to call')").innerText();
 check("Flexiple tagged Our service, alphabetically after ANSR", /Our service/.test(flexRow) && flexRow.indexOf("ANSR") < flexRow.indexOf("Flexiple"));
+await page.locator("section:has-text('City ranking')").first().scrollIntoViewIfNeeded();
+await page.waitForTimeout(300);
 await page.screenshot({ path: `${SHOTS}/02_setup_wizard.png` });
 
 // eligibility + cost
@@ -88,7 +94,7 @@ const cost = await page.locator("section:has-text('3-year cost estimate')").firs
 check("Pune 3-yr total 44.7 Cr", /44\.7 Cr/.test(cost), (cost.match(/44\.7 Cr/) || [""])[0]);
 check("cost shows assumptions A1-A5", ["A1", "A2", "A3", "A4", "A5"].every((a) => cost.includes(a)));
 check("cost labelled Estimate", /Estimate/.test(cost));
-await page.locator("section:has-text('3-year cost estimate')").first().scrollIntoViewIfNeeded();
+await page.locator("section:has-text('Incentive eligibility')").first().scrollIntoViewIfNeeded();
 await page.waitForTimeout(300);
 await page.screenshot({ path: `${SHOTS}/03_eligibility_cost.png` });
 
