@@ -1,0 +1,115 @@
+[
+  {
+    "id": "p_flexiple",
+    "name": "Flexiple",
+    "category": "setup_bot",
+    "cities": [
+      "bengaluru",
+      "hyderabad",
+      "pune",
+      "chennai"
+    ],
+    "notes": "Our service. Contractors, Managed Teams ($299/person/month + salary at cost), GCC entity build (4-6 months, EOR bridge).",
+    "source_id": "src_flexiple_gcc",
+    "is_flexiple": true
+  },
+  {
+    "id": "p_ansr",
+    "name": "ANSR",
+    "category": "setup_bot",
+    "cities": [],
+    "notes": "GCC setup and build-operate-transfer operator.",
+    "source_id": "src_ansr_outlook",
+    "is_flexiple": false
+  },
+  {
+    "id": "p_inductus",
+    "name": "Inductus",
+    "category": "setup_bot",
+    "cities": [],
+    "notes": "GCC setup and advisory. Add website as source before launch.",
+    "source_id": null,
+    "is_flexiple": false
+  },
+  {
+    "id": "p_zinnov",
+    "name": "Zinnov",
+    "category": "advisory",
+    "cities": [],
+    "notes": "Advisory and GCC research (co-publishes nasscom reports).",
+    "source_id": "src_zinnov_location",
+    "is_flexiple": false
+  },
+  {
+    "id": "p_draup",
+    "name": "Draup",
+    "category": "advisory",
+    "cities": [],
+    "notes": "Paid intelligence; GCC opportunity analysis aimed at vendors. Add website as source before launch.",
+    "source_id": null,
+    "is_flexiple": false
+  },
+  {
+    "id": "p_ey",
+    "name": "EY India",
+    "category": "legal_tax",
+    "cities": [],
+    "notes": "Big 4: tax, entity and GCC advisory.",
+    "source_id": "src_ey_podcast",
+    "is_flexiple": false
+  },
+  {
+    "id": "p_teamlease",
+    "name": "TeamLease RegTech",
+    "category": "legal_tax",
+    "cities": [],
+    "notes": "Regulatory compliance; publishes state scheme summaries.",
+    "source_id": "src_tn_teamlease",
+    "is_flexiple": false
+  },
+  {
+    "id": "p_anarock",
+    "name": "ANAROCK",
+    "category": "real_estate",
+    "cities": [],
+    "notes": "Real-estate advisory and research.",
+    "source_id": "src_ficci_anarock",
+    "is_flexiple": false
+  },
+  {
+    "id": "p_vestian",
+    "name": "Vestian",
+    "category": "real_estate",
+    "cities": [],
+    "notes": "Workplace and real-estate advisory; publishes GCC counts.",
+    "source_id": "src_vestian_yourstory",
+    "is_flexiple": false
+  },
+  {
+    "id": "p_talent500",
+    "name": "Talent500",
+    "category": "recruiting",
+    "cities": [],
+    "notes": "GCC hiring and talent reports.",
+    "source_id": "src_talent500",
+    "is_flexiple": false
+  },
+  {
+    "id": "p_hrbx",
+    "name": "HRBx",
+    "category": "eor",
+    "cities": [],
+    "notes": "HR/EOR services; publishes GCC playbook.",
+    "source_id": "src_hrbx_2026",
+    "is_flexiple": false
+  },
+  {
+    "id": "p_gt",
+    "name": "Grant Thornton Bharat",
+    "category": "advisory",
+    "cities": [],
+    "notes": "Advisory; published Maharashtra policy summary.",
+    "source_id": "src_mh_policy",
+    "is_flexiple": false
+  }
+]

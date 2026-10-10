@@ -1,0 +1,279 @@
+{
+  "persona": {
+    "hq_country": "US",
+    "company_size": 400,
+    "global2000": false,
+    "seats_y1": 40,
+    "seats_y3": 120,
+    "functions": [
+      "eng",
+      "ops"
+    ],
+    "open_to_tier2": false,
+    "investment_inr_cr": null
+  },
+  "priority": "cost",
+  "ranking": [
+    {
+      "city": "pune",
+      "coverage": 1.0,
+      "score": 77.2,
+      "components": {
+        "talent": 0.077,
+        "rent": 0.782,
+        "salary": 1.0,
+        "attrition": 1.0,
+        "incentives": 1.0
+      },
+      "raw": {
+        "talent": 12,
+        "rent": 87,
+        "salary": 15.0,
+        "attrition": 14,
+        "incentives": 0.5
+      },
+      "eligibility": [
+        [
+          "pol_mh_2025",
+          "needs_check",
+          [
+            "Size class (Small to Mega) thresholds and Zone I/II mapping of your site are not in the registry."
+          ]
+        ]
+      ]
+    },
+    {
+      "city": "hyderabad",
+      "coverage": 1.0,
+      "score": 57.2,
+      "components": {
+        "talent": 0.423,
+        "rent": 1.0,
+        "salary": 0.5,
+        "attrition": 0.75,
+        "incentives": 0.0
+      },
+      "raw": {
+        "talent": 21,
+        "rent": 70,
+        "salary": 17.5,
+        "attrition": 15,
+        "incentives": 0.0
+      },
+      "eligibility": []
+    },
+    {
+      "city": "bengaluru",
+      "coverage": 1.0,
+      "score": 31.8,
+      "components": {
+        "talent": 1.0,
+        "rent": 0.59,
+        "salary": 0.0,
+        "attrition": 0.0,
+        "incentives": 0.0
+      },
+      "raw": {
+        "talent": 36,
+        "rent": 102,
+        "salary": 20,
+        "attrition": 18,
+        "incentives": 0.0
+      },
+      "eligibility": [
+        [
+          "pol_ka_2024",
+          "not_eligible",
+          [
+            "Karnataka pays these incentives only outside Bengaluru."
+          ]
+        ]
+      ]
+    },
+    {
+      "city": "chennai",
+      "coverage": 0.5,
+      "score": null,
+      "components": {
+        "talent": 0.0,
+        "rent": 0.885,
+        "salary": null,
+        "attrition": null,
+        "incentives": 0.0
+      },
+      "raw": {
+        "talent": 10,
+        "rent": 79,
+        "salary": null,
+        "attrition": null,
+        "incentives": 0.0
+      },
+      "eligibility": [
+        [
+          "pol_tn_2024",
+          "not_eligible",
+          [
+            "TN scheme requires a Forbes/Fortune Global 2000 company.",
+            "TN scheme requires 200+ direct employees."
+          ]
+        ]
+      ]
+    },
+    {
+      "city": "mumbai",
+      "coverage": 0.5,
+      "score": null,
+      "components": {
+        "talent": 0.077,
+        "rent": 0.0,
+        "salary": null,
+        "attrition": null,
+        "incentives": 1.0
+      },
+      "raw": {
+        "talent": 12,
+        "rent": 148,
+        "salary": null,
+        "attrition": null,
+        "incentives": 0.5
+      },
+      "eligibility": [
+        [
+          "pol_mh_2025",
+          "needs_check",
+          [
+            "Size class (Small to Mega) thresholds and Zone I/II mapping of your site are not in the registry."
+          ]
+        ]
+      ]
+    },
+    {
+      "city": "ncr_gurugram",
+      "coverage": 0.3,
+      "score": null,
+      "components": {
+        "talent": 0.154,
+        "rent": null,
+        "salary": null,
+        "attrition": null,
+        "incentives": 0.0
+      },
+      "raw": {
+        "talent": 14,
+        "rent": null,
+        "salary": null,
+        "attrition": null,
+        "incentives": 0.0
+      },
+      "eligibility": []
+    },
+    {
+      "city": "ncr_noida",
+      "coverage": 0.1,
+      "score": null,
+      "components": {
+        "talent": null,
+        "rent": null,
+        "salary": null,
+        "attrition": null,
+        "incentives": 1.0
+      },
+      "raw": {
+        "talent": null,
+        "rent": null,
+        "salary": null,
+        "attrition": null,
+        "incentives": 0.5
+      },
+      "eligibility": [
+        [
+          "pol_up_2024",
+          "needs_check",
+          [
+            "Need your investment_inr_cr to check: UP policy requires minimum FDI of ₹50 Cr."
+          ]
+        ]
+      ]
+    }
+  ],
+  "three_year": {
+    "pune": {
+      "rows": [
+        {
+          "year": 1,
+          "seats": 40,
+          "rent_lakh": 62.6,
+          "salary_lakh": 600.0,
+          "total_lakh": 662.6
+        },
+        {
+          "year": 2,
+          "seats": 80.0,
+          "rent_lakh": 125.3,
+          "salary_lakh": 1318.8,
+          "total_lakh": 1444.1
+        },
+        {
+          "year": 3,
+          "seats": 120,
+          "rent_lakh": 187.9,
+          "salary_lakh": 2174.0,
+          "total_lakh": 2362.0
+        }
+      ],
+      "total_lakh": 4468.7
+    },
+    "hyderabad": {
+      "rows": [
+        {
+          "year": 1,
+          "seats": 40,
+          "rent_lakh": 50.4,
+          "salary_lakh": 700.0,
+          "total_lakh": 750.4
+        },
+        {
+          "year": 2,
+          "seats": 80.0,
+          "rent_lakh": 100.8,
+          "salary_lakh": 1538.6,
+          "total_lakh": 1639.4
+        },
+        {
+          "year": 3,
+          "seats": 120,
+          "rent_lakh": 151.2,
+          "salary_lakh": 2536.4,
+          "total_lakh": 2687.6
+        }
+      ],
+      "total_lakh": 5077.4
+    },
+    "bengaluru": {
+      "rows": [
+        {
+          "year": 1,
+          "seats": 40,
+          "rent_lakh": 73.4,
+          "salary_lakh": 800.0,
+          "total_lakh": 873.4
+        },
+        {
+          "year": 2,
+          "seats": 80.0,
+          "rent_lakh": 146.9,
+          "salary_lakh": 1758.4,
+          "total_lakh": 1905.3
+        },
+        {
+          "year": 3,
+          "seats": 120,
+          "rent_lakh": 220.3,
+          "salary_lakh": 2898.7,
+          "total_lakh": 3119.0
+        }
+      ],
+      "total_lakh": 5897.7
+    }
+  }
+}
