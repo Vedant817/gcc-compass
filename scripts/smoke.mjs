@@ -12,8 +12,19 @@ const SHOTS = process.env.SHOTS_DIR || "screenshots";
 const results = [];
 function check(name, ok, detail = "") {
   results.push({ name, ok, detail });
-  console.log(`${ok ? "PASS" : "FAIL"}  ${name}${detail ? ` — ${detail}` : ""}`);
+  console.log(`${ok ? "PASS" : process.env.AI_OPTIONAL === "1" && AI_CHECKS.has(name) ? "SKIP" : "FAIL"}  ${name}${detail ? ` — ${detail}` : ""}`);
+  if (!ok && process.env.AI_OPTIONAL === "1" && AI_CHECKS.has(name)) results.pop();
 }
+
+/** Checks that need a working LLM; with AI_OPTIONAL=1 they don't fail the run. */
+const AI_CHECKS = new Set([
+  "why-they-differ note rendered",
+  "ask cites pol_mh_2025",
+  "ask mentions 50,000 payroll",
+  "extraction found TS fact",
+  "registry count grows after approve",
+  "approved fact survives refresh",
+]);
 
 mkdirSync(SHOTS, { recursive: true });
 
