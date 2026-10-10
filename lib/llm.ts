@@ -81,14 +81,14 @@ export async function chat(system: string, user: string, opts: ChatOptions = {})
       }
       clearTimeout(timer);
 
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        lastError = `The model service returned ${res.status}.`;
-        console.error(`[llm] ${model} attempt ${attempt + 1} -> ${res.status}: ${text.slice(0, 200)}`);
-        // rate limits and transient overload get one more try on this model
-        if (res.status === 429 || res.status === 503) continue;
-        break;
-      }
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      lastError = `The model service returned ${res.status}.`;
+      console.error(`[llm] ${model} attempt ${attempt + 1} -> ${res.status}: ${text.slice(0, 200)}`);
+      // rate limits and transient overload get one more try on this model
+      if (res.status === 429 || res.status === 503) continue;
+      break;
+    }
       const data = (await res.json()) as {
         choices?: { message?: { content?: string } }[];
       };

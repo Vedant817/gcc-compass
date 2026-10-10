@@ -4,7 +4,8 @@ import { z } from "zod";
 export const runtime = "nodejs";
 
 const Body = z.object({
-  planId: z.string().max(200).optional(),
+  // the plan id is the URL-encoded plan payload, so it can be a few hundred chars
+  planId: z.string().max(600).optional(),
   name: z.string().min(1).max(120),
   email: z.string().email().max(200),
   note: z.string().max(2_000).optional().default(""),
