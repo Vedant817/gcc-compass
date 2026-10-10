@@ -70,10 +70,7 @@ export async function POST(req: Request) {
       );
     } catch (e) {
       console.error("[why] llm failure:", (e as Error).message);
-      return NextResponse.json(
-        { error: "Couldn't write the note.", debug: (e as Error).message },
-        { status: 502 },
-      );
+      return NextResponse.json({ error: "Couldn't write the note." }, { status: 502 });
     }
     const res = NoteSchema.safeParse(parsed);
     if (!res.success) continue;
