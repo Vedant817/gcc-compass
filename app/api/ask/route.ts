@@ -61,8 +61,9 @@ export async function POST(req: Request) {
     let parsed: unknown;
     try {
       parsed = await chatJson(system, body.question);
-    } catch {
-      return NextResponse.json({ error: "The model didn't answer. Try again." }, { status: 502 });
+    } catch (e) {
+      console.error("[ask] llm failure:", (e as Error).message);
+      return NextResponse.json({ error: "The model didn't answer. Try again.", debug: (e as Error).message }, { status: 502 });
     }
     const res = AskResponse.safeParse(parsed);
     if (!res.success) continue;
