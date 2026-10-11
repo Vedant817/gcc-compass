@@ -63,8 +63,16 @@ export async function POST(req: Request) {
       parsed = await chatJson(system, body.question);
     } catch (e) {
       const msg = (e as Error).message;
+      const rateLimited = msg.includes("rate-limited");
       return NextResponse.json(
-        { error: msg === "AI is off in this deployment (no LLM_API_KEY)." ? msg : "The model didn't answer. Try again.", rateLimited: msg.includes("rate-limited") },
+        {
+          error: rateLimited
+            ? msg
+            : msg === "AI is off in this deployment (no LLM_API_KEY)."
+              ? msg
+              : "The model didn't answer. Try again.",
+          rateLimited,
+        },
         { status: 502 },
       );
     }
