@@ -232,8 +232,7 @@ export function TruthView({ presets }: { presets: TruthPreset[] }) {
       ) : (
         <Card className="py-4">
           <div ref={chartRef} style={{ height: bars.length * 30 + 48 }} className="overflow-x-auto">
-            <div style={{ minWidth: axisWidth + 300 }}>
-              <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 layout="vertical"
                 data={bars}
@@ -286,7 +285,6 @@ export function TruthView({ presets }: { presets: TruthPreset[] }) {
                 </Bar>
               </BarChart>
               </ResponsiveContainer>
-            </div>
           </div>
           <p className="text-xs text-muted mt-2">
             {bars.some((b) => b.shade === "secondary")
