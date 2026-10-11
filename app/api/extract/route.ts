@@ -75,8 +75,10 @@ export async function POST(req: Request) {
       maxTokens: 8192,
     });
   } catch (e) {
+    const msg = (e as Error).message;
+    console.error("[extract] llm failure:", msg);
     return NextResponse.json(
-      { error: (e as Error).message || "Extraction failed." },
+      { error: msg.includes("rate-limited") ? msg : "Extraction failed. Try again." },
       { status: 502 },
     );
   }

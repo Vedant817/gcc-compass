@@ -69,8 +69,12 @@ export async function POST(req: Request) {
           : "Your previous note contained a number that is not in the facts above. Remove it or cite the fact it comes from.",
       );
     } catch (e) {
-      console.error("[why] llm failure:", (e as Error).message);
-      return NextResponse.json({ error: "Couldn't write the note." }, { status: 502 });
+      const msg = (e as Error).message;
+      console.error("[why] llm failure:", msg);
+      return NextResponse.json(
+        { error: msg.includes("rate-limited") ? msg : "Couldn't write the note.", rateLimited: msg.includes("rate-limited") },
+        { status: 502 },
+      );
     }
     const res = NoteSchema.safeParse(parsed);
     if (!res.success) continue;

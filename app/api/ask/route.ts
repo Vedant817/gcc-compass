@@ -61,8 +61,12 @@ export async function POST(req: Request) {
     let parsed: unknown;
     try {
       parsed = await chatJson(system, body.question);
-    } catch {
-      return NextResponse.json({ error: "The model didn't answer. Try again." }, { status: 502 });
+    } catch (e) {
+      const msg = (e as Error).message;
+      return NextResponse.json(
+        { error: msg === "AI is off in this deployment (no LLM_API_KEY)." ? msg : "The model didn't answer. Try again.", rateLimited: msg.includes("rate-limited") },
+        { status: 502 },
+      );
     }
     const res = AskResponse.safeParse(parsed);
     if (!res.success) continue;
