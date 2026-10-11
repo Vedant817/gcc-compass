@@ -7,7 +7,8 @@ state incentives you actually qualify for, and what it costs over three years.
 
 Built by Vedant Mahajan for the Flexiple Product Intern take-home, October 2026.
 
-Live: <https://gcc-compass.vercel.app> · Source: <https://github.com/Vedant817/gcc-compass>
+Live: <https://gcc-compas-vedants-projects-8098650d.vercel.app> · Source:
+<https://github.com/Vedant817/gcc-compass>
 
 ## What it is
 
@@ -86,6 +87,7 @@ npm run dev                    # http://localhost:3000
 npm test                       # 80 unit tests: scoring, eligibility, cost, grounding, seed integrity
 python3 pack/scripts/validate_seed.py   # seed validator from the pack
 node scripts/smoke.mjs         # full demo script against a running instance (BASE_URL, npm start)
+node scripts/shot-addsource.mjs           # retry helper when the model quota is flaky
 ```
 
 ## Environment variables
@@ -144,5 +146,7 @@ lib/            registry, scoring, eligibility, cost, llm, prompts, grounding, p
 data/seed/      the registry seed (sources, facts, cities, states, policies, providers)
 tests/          vitest: scoring vs expected_demo_output.json, eligibility, grounding, seed
 pack/           the build pack this was made from (spec, design guide, reference implementation)
-scripts/        smoke.mjs (demo script + screenshots)
+scripts/        smoke.mjs (demo script + screenshots), shot-addsource.mjs
+screenshots/    the five deck screenshots (1440×900) and the plan export
 ```
+

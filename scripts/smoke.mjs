@@ -137,6 +137,8 @@ try {
   // survive a refresh
   await page.reload({ waitUntil: "networkidle" });
   check("approved fact survives refresh", /71 facts/.test(await page.locator("header").innerText()));
+  await page.locator("section:has-text('Recently added')").scrollIntoViewIfNeeded();
+  await page.waitForTimeout(300);
   await page.screenshot({ path: `${SHOTS}/05_add_source_export.png` });
 } catch (e) {
   console.log(`SKIP  add-source step failed: ${e.message.split("\n")[0]}`);
@@ -163,6 +165,7 @@ const planUrl = page.url();
 await page.goto(planUrl, { waitUntil: "networkidle" });
 const reopened = await page.locator("main").innerText();
 check("plan link reopens identically", reopened.includes("77.2"));
+await page.screenshot({ path: `${SHOTS}/06_plan_export.png` });
 
 await browser.close();
 
