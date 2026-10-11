@@ -1,5 +1,9 @@
 # Note on deviations and unfinished items
 
+Production URL: **https://gcc-compas-vedants-projects-8098650d.vercel.app**
+(the `gcc-compass.vercel.app` subdomain was already owned by another Vercel account, so
+the project's own domain is the public one).
+
 Everything in the pack's build plan (M0-M8) is implemented. The items below are choices I
 made where the pack was ambiguous, or limits I hit while building. Each one keeps the data
 honest; none of them changes a number the pack specified.
@@ -58,8 +62,15 @@ honest; none of them changes a number the pack specified.
 
 ## Quota note
 
-The public deployment uses a Gemini API key on the free tier (20 requests/day/model). The
-demo script uses four model calls (truth note, one ask, one extraction, plus retries), so a
-cold incognito run works, but heavy clicking through Ask will eventually show "The model
-service returned 429" — which the UI renders as a plain retry message, with the rest of the
-app unaffected.
+The public deployment uses a Gemini API key on the free tier (20 requests/day per model,
+shared per project). The demo script spends four model calls (one "why they differ" note,
+one Ask answer, one extraction), so a cold incognito run works — the five screenshots in
+`screenshots/` were captured from production with all three AI features working.
+
+The free-tier quota is the deployment's weakest link. When it runs out mid-session the app
+degrades honestly: the truth table still renders the full data, the note box says the table
+above is the data, Ask shows "The model service is rate-limited right now. Try again in a
+minute." with a retry, and Add a source says the same. Nothing else stops. Once the daily
+quota resets (about 12:30 PM IST), all three features answer again. For a deployment with a
+paid key, change `LLM_MODEL`/`LLM_FALLBACK_MODELS` in the Vercel project settings — no code
+change needed.
