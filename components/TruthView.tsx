@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -61,6 +61,18 @@ export function TruthView({ presets }: { presets: TruthPreset[] }) {
   const preset = presets.find((p) => p.id === presetId) ?? presets[0];
   const [city, setCity] = useState(preset?.defaultCity ?? CITY_CHOICES[0]);
   const [showCentres, setShowCentres] = useState(false);
+  const chartRef = useRef<HTMLDivElement>(null);
+  const [chartWidth, setChartWidth] = useState(900);
+
+  useEffect(() => {
+    const el = chartRef.current;
+    if (!el) return;
+    const measure = () => setChartWidth(el.clientWidth || 900);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   useEffect(() => {
     setCity(preset?.defaultCity ?? CITY_CHOICES[0]);
@@ -153,6 +165,8 @@ export function TruthView({ presets }: { presets: TruthPreset[] }) {
     [bars],
   );
 
+  const axisWidth = Math.max(150, Math.min(250, Math.round(chartWidth * 0.36)));
+
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-wrap items-end gap-4">
@@ -217,8 +231,9 @@ export function TruthView({ presets }: { presets: TruthPreset[] }) {
         <EmptyState>No facts for this metric yet. Add a source.</EmptyState>
       ) : (
         <Card className="py-4">
-          <div style={{ height: bars.length * 30 + 48 }}>
-            <ResponsiveContainer width="100%" height="100%">
+          <div ref={chartRef} style={{ height: bars.length * 30 + 48 }} className="overflow-x-auto">
+            <div style={{ minWidth: axisWidth + 300 }}>
+              <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 layout="vertical"
                 data={bars}
@@ -236,7 +251,7 @@ export function TruthView({ presets }: { presets: TruthPreset[] }) {
                 <YAxis
                   type="category"
                   dataKey="label"
-                  width={250}
+                  width={axisWidth}
                   tick={{ fill: "#6C757D", fontSize: 12 }}
                   stroke="#E9ECEF"
                 />
@@ -270,7 +285,8 @@ export function TruthView({ presets }: { presets: TruthPreset[] }) {
                   />
                 </Bar>
               </BarChart>
-            </ResponsiveContainer>
+              </ResponsiveContainer>
+            </div>
           </div>
           <p className="text-xs text-muted mt-2">
             {bars.some((b) => b.shade === "secondary")

@@ -122,7 +122,7 @@ export default function PlanPage({ params }: { params: { id: string } }) {
         {rankedCities.length === 0 ? (
           <p className="text-sm text-muted">No city had enough data to rank for this profile.</p>
         ) : (
-          <table className="w-full text-[13px]">
+          <div className="overflow-x-auto"><table className="w-full text-[13px]">
             <thead>
               <tr>
                 <th className="text-left border-b border-rule px-2 py-1 text-muted font-medium">Rank</th>
@@ -157,7 +157,7 @@ export default function PlanPage({ params }: { params: { id: string } }) {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         )}
         <p className="text-xs text-muted mt-2">
           Weights on this plan: talent {Math.round(plan.weights.talent)} · rent{" "}
@@ -218,3 +218,4 @@ export default function PlanPage({ params }: { params: { id: string } }) {
     </div>
   );
 }
+
