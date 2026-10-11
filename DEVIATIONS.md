@@ -50,6 +50,11 @@ honest; none of them changes a number the pack specified.
 
 ## Unfinished / smaller items
 
+- **Accessibility audit.** Labels on every input, visible focus rings (sand outline) and
+  AA-contrast text/backgrounds are implemented, but Lighthouse wasn't run in this
+  environment (no Lighthouse/Chrome available), so the "≥ 90" claim in the pack's checklist
+  is unverified. `node scripts/mobile-check.mjs` verifies the 390 px layout on the deployed
+  URL.
 - **Method page** is a short single page (`/method`) rather than a modal; it covers
   confidence, the score, the cost assumptions, where AI is constrained and neutrality.
 - **Staleness badges** (rent > 180 days, counts > 365) are not implemented — the "nice-to-have"
