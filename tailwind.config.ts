@@ -29,16 +29,8 @@ module.exports = {
       maxWidth: {
         page: "1200px",
       },
-      keyframes: {
-        "fade-in": {
-          from: { opacity: "0" },
-          to: { opacity: "1" },
-        },
-      },
-      animation: {
-        "fade-in": "fade-in 150ms ease-out",
-      },
     },
   },
   plugins: [],
 };
+

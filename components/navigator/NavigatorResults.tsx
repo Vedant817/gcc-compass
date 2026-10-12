@@ -230,8 +230,10 @@ export function incentiveStatus(
 ): { status?: "eligible" | "needs_check" | "not_eligible"; label?: string } {
   const state = reg.stateForCity(r.city);
   if (r.eligibility.length === 0) {
-    if (state?.gcc_policy_status === "none_known")
-      return { label: `No GCC fiscal policy on record (2025)` };
+    if (state?.gcc_policy_status === "none_known") {
+      const asOf = reg.factsFor(state.id, "gcc_policy_status")[0]?.as_of;
+      return { label: asOf ? `No GCC fiscal policy on record (${asOf})` : "No GCC fiscal policy on record" };
+    }
     if (state?.gcc_policy_status === "expected")
       return { label: "Policy expected [UNVERIFIED]" };
     return { label: "No policy on record" };

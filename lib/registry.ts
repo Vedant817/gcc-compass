@@ -140,13 +140,6 @@ export class RegistryView {
     );
   }
 
-  allNumericFacts(metric: string, sourceId?: string): Fact[] {
-    return this.facts.filter(
-      (f) =>
-        f.metric === metric && f.value_num !== null && (sourceId === undefined || f.source_id === sourceId),
-    );
-  }
-
   policiesForState(stateId: string): Policy[] {
     return this.policies.filter((p) => p.state_id === stateId);
   }
@@ -168,6 +161,9 @@ export class RegistryView {
     return this.facts.filter((f) => f.metric === metric);
   }
 }
+
+/** The single source of truth for the "one methodology across cities" rent pin. */
+export const RENT_SOURCE_ID = "src_office_annual_2025";
 
 export const registry = RegistryView.load();
 

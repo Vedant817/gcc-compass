@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { registry } from "@/lib/registry";
-import { chatJson, llmConfigured, LLMError } from "@/lib/llm";
+import { chatJson, llmConfigured } from "@/lib/llm";
 import { buildWhySystem } from "@/lib/prompts";
 import { checkGrounded } from "@/lib/grounding";
 
@@ -19,7 +19,17 @@ const NoteSchema = z.object({
   cited_ids: z.array(z.string()),
 });
 
+/** Note cache, bounded so a long-lived instance can't grow without limit. */
+const MAX_CACHED_NOTES = 200;
 const cache = new Map<string, { note: string; cited_ids: string[] }>();
+
+function cacheSet(key: string, value: { note: string; cited_ids: string[] }): void {
+  if (cache.size >= MAX_CACHED_NOTES) {
+    const oldest = cache.keys().next().value;
+    if (oldest !== undefined) cache.delete(oldest);
+  }
+  cache.set(key, value);
+}
 
 function keyOf(ids: string[]): string {
   return [...ids].sort().join(",");
@@ -40,13 +50,13 @@ export async function POST(req: Request) {
       : [];
 
   if (facts.length < 2) {
-    return NextResponse.json({ note: "", cited_ids: [], single: true });
+    return NextResponse.json({ note: "", cited_ids: [] });
   }
 
   // only numeric-bearing or qualitative facts with a definition make a useful note
   facts = facts.filter((f) => f.value_num !== null || f.value_text);
   if (facts.length < 2) {
-    return NextResponse.json({ note: "", cited_ids: [], single: true });
+    return NextResponse.json({ note: "", cited_ids: [] });
   }
 
   if (!llmConfigured()) {
@@ -84,8 +94,10 @@ export async function POST(req: Request) {
       continue;
     }
     const out = { note: res.data.note, cited_ids: check.resolvedIds };
-    cache.set(key, out);
+    cacheSet(key, out);
     return NextResponse.json(out);
   }
   return NextResponse.json({ error: "Couldn't write the note." }, { status: 502 });
 }
+
+

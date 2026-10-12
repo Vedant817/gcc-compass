@@ -3,26 +3,14 @@
 const inrFmt0 = new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 });
 const inrFmt1 = new Intl.NumberFormat("en-IN", { maximumFractionDigits: 1 });
 
-export function inr(n: number, decimals = 0): string {
-  return `₹${(decimals ? inrFmt1 : inrFmt0).format(n)}`;
-}
-
 export function inrNum(n: number, decimals = 0): string {
   return (decimals ? inrFmt1 : inrFmt0).format(n);
 }
 
-/** ₹62.6 L for below a crore, ₹1,444.1 L stays lakh, ₹44.7 Cr above. */
+/** ₹62.6 L below a crore, ₹44.7 Cr above. */
 export function lakhCr(lakh: number): string {
   if (Math.abs(lakh) >= 100) return `₹${inrFmt1.format(Math.round(lakh / 10) / 10)} Cr`;
   return `₹${inrFmt1.format(lakh)} L`;
-}
-
-export function lakhFull(lakh: number): string {
-  return `₹${inrFmt0.format(lakh * 100000)}`;
-}
-
-export function pct(x: number, digits = 0): string {
-  return `${x.toFixed(digits)}%`;
 }
 
 export function score(x: number | null): string {

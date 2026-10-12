@@ -55,30 +55,8 @@ export function Td({
   );
 }
 
-export function Tr({
-  children,
-  className,
-  onClick,
-  selected,
-}: {
-  children: ReactNode;
-  className?: string;
-  onClick?: () => void;
-  selected?: boolean;
-}) {
-  return (
-    <tr
-      onClick={onClick}
-      className={cn(
-        "even:bg-paper",
-        onClick && "cursor-pointer",
-        selected && "bg-sand/40",
-        className,
-      )}
-    >
-      {children}
-    </tr>
-  );
+export function Tr({ children, className }: { children: ReactNode; className?: string }) {
+  return <tr className={cn("even:bg-paper", className)}>{children}</tr>;
 }
 
 export function SkeletonRows({ rows = 4, cols = 6 }: { rows?: number; cols?: number }) {
@@ -143,3 +121,4 @@ export function Disclosure({
     </details>
   );
 }
+

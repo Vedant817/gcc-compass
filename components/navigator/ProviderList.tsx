@@ -1,7 +1,7 @@
 "use client";
 
 import type { RegistryView } from "@/lib/registry";
-import type { NavigatorInputs } from "@/lib/types";
+import type { NavigatorInputs, Provider } from "@/lib/types";
 import { Card } from "@/components/ui/table";
 import { OurServiceBadge, SiteLinkFlag } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/button";
@@ -22,7 +22,7 @@ export function ProviderList({
   reg: RegistryView;
   inputs: NavigatorInputs;
 }) {
-  const reasons: { category: string; why: string }[] = [
+  const reasons: { category: Provider["category"]; why: string }[] = [
     { category: "setup_bot", why: "Every first-time centre needs one." },
     { category: "legal_tax", why: "Entity, compliance and tax setup." },
     { category: "real_estate", why: "Leasing in the shortlisted city." },
@@ -43,7 +43,7 @@ export function ProviderList({
       <div className="grid md:grid-cols-2 gap-4">
         {reasons.map(({ category, why }) => {
           const providers = reg
-            .providersByCategory(category as "setup_bot")
+            .providersByCategory(category)
             .slice()
             .sort((a, b) => a.name.localeCompare(b.name));
           return (

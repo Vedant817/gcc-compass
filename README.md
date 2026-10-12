@@ -86,16 +86,26 @@ cp .env.example .env.local     # add your LLM keys (optional; AI features say "A
 npm run dev                    # http://localhost:3000
 npm test                       # 80 unit tests: scoring, eligibility, cost, grounding, seed integrity
 python3 pack/scripts/validate_seed.py   # seed validator from the pack
-node scripts/smoke.mjs         # full demo script against a running instance (BASE_URL, npm start)
-node scripts/shot-addsource.mjs           # retry helper when the model quota is flaky
 ```
+
+Verification scripts (all take `BASE_URL`, defaulting to `http://localhost:3100`):
+
+```bash
+npm run build && PORT=3100 npm run start &     # or: npm run dev
+BASE_URL=http://localhost:3100 node scripts/smoke.mjs            # 29-check demo run; writes screenshots/
+BASE_URL=http://localhost:3100 node scripts/shot-addsource.mjs   # retry helper for the add-source screenshot
+BASE_URL=<url> node scripts/mobile-check.mjs                     # no 390px overflow on all five pages
+```
+
+`smoke.mjs` also reads `SHOTS_DIR` (where screenshots land) and `AI_OPTIONAL=1`
+(LLM-dependent checks are reported as SKIP instead of failing when the model quota is out).
 
 ## Environment variables
 
 | Var | Required | Notes |
 |---|---|---|
 | `LLM_API_KEY` | for AI features | server-side only, never exposed to the browser |
-| `LLM_BASE_URL` | for AI features | any OpenAI-compatible endpoint (default `https://api.openai.com/v1`) |
+| `LLM_BASE_URL` | for AI features | any OpenAI-compatible endpoint; there is no default, so leave it unset (with the key) to disable AI cleanly |
 | `LLM_MODEL` | for AI features | e.g. `gemini-flash-latest`, `gpt-4o-mini` |
 | `LLM_FALLBACK_MODELS` | optional | comma-separated models tried when the primary is rate-limited |
 | `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN` | optional | unused in the default deployment |

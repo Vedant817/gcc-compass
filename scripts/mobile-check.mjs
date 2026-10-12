@@ -1,5 +1,12 @@
+/**
+ * Mobile layout check: no horizontal overflow at 390 px on every page.
+ * Usage: BASE_URL=https://gcc-compas-vedants-projects-8098650d.vercel.app node scripts/mobile-check.mjs
+ *        BASE_URL=http://localhost:3100 node scripts/mobile-check.mjs
+ */
 import { chromium } from "playwright";
-const BASE = "https://gcc-compas-vedants-projects-8098650d.vercel.app";
+
+const BASE = process.env.BASE_URL || "http://localhost:3100";
+
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
 
@@ -21,10 +28,6 @@ const text = await page.locator("main").innerText();
 console.log("mobile navigator ranking renders:", text.includes("77.2"));
 if (!text.includes("77.2")) problems.push("mobile navigator ranking broken");
 
-await page.screenshot({ path: "C:/Users/vedan/AppData/Local/Temp/opencode/gcc/tmp1hbquj3s/shots/mobile-truth.png" });
-await page.goto(`${BASE}/truth`, { waitUntil: "networkidle" });
-await page.waitForTimeout(800);
-await page.screenshot({ path: "C:/Users/vedan/AppData/Local/Temp/opencode/gcc/tmp1hbquj3s/shots/mobile-truth-top.png" });
-
 console.log(problems.length ? `PROBLEMS: ${problems.join(" | ")}` : "no mobile problems");
 await browser.close();
+process.exit(problems.length ? 1 : 0);

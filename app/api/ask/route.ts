@@ -20,12 +20,18 @@ const Body = z.object({
     .optional(),
 });
 
+/** Per-IP in-memory rate limit (best effort on serverless: per warm instance). */
+const MAX_TRACKED_IPS = 500;
 const hits = new Map<string, { count: number; reset: number }>();
 
 function rateLimited(ip: string): boolean {
   const now = Date.now();
   const rec = hits.get(ip);
   if (!rec || now > rec.reset) {
+    if (hits.size >= MAX_TRACKED_IPS) {
+      for (const [key, r] of hits) if (now > r.reset) hits.delete(key);
+      if (hits.size >= MAX_TRACKED_IPS) hits.clear();
+    }
     hits.set(ip, { count: 1, reset: now + 60_000 });
     return false;
   }
@@ -63,15 +69,15 @@ export async function POST(req: Request) {
       parsed = await chatJson(system, body.question);
     } catch (e) {
       const msg = (e as Error).message;
-      const rateLimited = msg.includes("rate-limited");
+      const rateLimitedByService = msg.includes("rate-limited");
       return NextResponse.json(
         {
-          error: rateLimited
+          error: rateLimitedByService
             ? msg
             : msg === "AI is off in this deployment (no LLM_API_KEY)."
               ? msg
               : "The model didn't answer. Try again.",
-          rateLimited,
+          rateLimited: rateLimitedByService,
         },
         { status: 502 },
       );

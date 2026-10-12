@@ -1,5 +1,5 @@
 import { evaluatePolicy, type PolicyEligibility } from "./eligibility";
-import type { RegistryView } from "./registry";
+import { RENT_SOURCE_ID, type RegistryView } from "./registry";
 import type { NavigatorInputs, PresetKey, Weights } from "./types";
 
 /** Weights from 04 §4 (percent, each preset sums to 100). */
@@ -69,7 +69,7 @@ export function cityRaw(
   inputs: NavigatorInputs,
 ): { raw: CityRaw; eligibility: PolicyEligibility[] } {
   const blrMid = reg.numericFact("bengaluru", "swe_ctc_mid")?.value_num ?? null;
-  const rent = reg.numericFact(cityId, "office_rent_grade_a", "src_office_annual_2025");
+  const rent = reg.numericFact(cityId, "office_rent_grade_a", RENT_SOURCE_ID);
   const talent = reg.numericFact(cityId, "gcc_talent_share_pct");
   const attr = reg.numericFact(cityId, "attrition_pct");
 
@@ -160,3 +160,4 @@ export function rank(reg: RegistryView, inputs: NavigatorInputs, weights: Weight
 export function missingComponents(raw: CityRaw): Component[] {
   return COMPONENTS.filter((k) => raw[k] === null);
 }
+

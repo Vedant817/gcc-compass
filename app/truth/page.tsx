@@ -1,4 +1,5 @@
 import { TruthView, type TruthPreset } from "@/components/TruthView";
+import { RENT_SOURCE_ID } from "@/lib/registry";
 
 export const metadata = {
   title: "Truth table · GCC Compass",
@@ -38,7 +39,7 @@ const PRESETS: TruthPreset[] = [
       "One bar per city from a single methodology. Where another publisher gives a different figure for the same city, it stays in the table below.",
     oneBarPerCity: {
       metric: "office_rent_grade_a",
-      sourceId: "src_office_annual_2025",
+      sourceId: RENT_SOURCE_ID,
       unit: "₹/sq ft/month",
     },
   },

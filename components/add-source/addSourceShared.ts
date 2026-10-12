@@ -1,25 +1,13 @@
-/** Entities the extraction prompt is allowed to map to (from 05). */
+/**
+ * The entity ids the extraction prompt and the review UI are allowed to map
+ * to (from 05), derived from the seed so the list can never drift from it.
+ */
+import { seedRegistry } from "@/lib/registry";
+
 export const ALLOWED_ENTITY_IDS = new Set<string>([
   "IN",
-  "KA",
-  "MH",
-  "GJ",
-  "UP",
-  "TN",
-  "MP",
-  "TS",
-  "HR",
-  "bengaluru",
-  "hyderabad",
-  "pune",
-  "chennai",
-  "mumbai",
-  "ncr_gurugram",
-  "ncr_noida",
-  "ahmedabad_gift",
-  "coimbatore",
-  "indore",
-  "lucknow",
+  ...seedRegistry.states.map((s) => s.id),
+  ...seedRegistry.cities.map((c) => c.id),
 ]);
 
 /** The demo snippet from 05, labelled as paraphrased sample text in the UI. */

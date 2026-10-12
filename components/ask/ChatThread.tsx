@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CitationChip } from "@/components/CitationChip";
 import { Button } from "@/components/ui/button";
 import { SiteLinkFlag } from "@/components/ui/badge";
@@ -198,7 +198,7 @@ export function ChatThread() {
 }
 
 /** Paragraphs, bullets and [id] citation chips. */
-export function AnswerBody({ text }: { text: string }) {
+function AnswerBody({ text }: { text: string }) {
   const blocks = text.split(/\n{2,}/);
   return (
     <div className="text-sm space-y-2">
@@ -251,3 +251,4 @@ function CitationFooter({ citations }: { citations: Citation[] }) {
     </div>
   );
 }
+

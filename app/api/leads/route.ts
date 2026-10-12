@@ -20,9 +20,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Check the name, email and consent box." }, { status: 400 });
   }
   // Prototype: the lead is logged server-side (and kept in the browser's
-  // localStorage). No email is sent.
+  // localStorage). No email is sent. Name and a masked email are logged for
+  // follow-up; the free-text note is not persisted in logs.
+  const masked = body.email.replace(/^(.).*(@.*)$/, "$1***$2");
   console.log(
-    `[lead] ${new Date().toISOString()} plan=${body.planId ?? "-"} name=${body.name} email=${body.email} note="${body.note.replace(/\s+/g, " ").slice(0, 120)}"`,
+    `[lead] ${new Date().toISOString()} plan=${(body.planId ?? "-").slice(0, 24)} name=${body.name} email=${masked} note=${body.note ? `(${body.note.length} chars, not logged)` : "none"}`,
   );
   return NextResponse.json({ ok: true });
 }

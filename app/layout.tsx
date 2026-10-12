@@ -3,6 +3,7 @@ import { Source_Serif_4, Jost } from "next/font/google";
 import "./globals.css";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
+import { ToastProvider } from "@/components/ui/toast";
 
 const sourceSerif = Source_Serif_4({
   subsets: ["latin"],
@@ -28,9 +29,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${sourceSerif.variable} ${jost.variable}`}>
       <body className="min-h-screen flex flex-col">
-        <SiteHeader />
-        <main className="flex-1 w-full max-w-page mx-auto px-6 py-6">{children}</main>
-        <SiteFooter />
+        <ToastProvider>
+          <SiteHeader />
+          <main className="flex-1 w-full max-w-page mx-auto px-6 py-6">{children}</main>
+          <SiteFooter />
+        </ToastProvider>
       </body>
     </html>
   );

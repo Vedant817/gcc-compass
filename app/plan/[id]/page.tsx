@@ -1,11 +1,7 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { registry } from "@/lib/registry";
-import { rank, PRESET_WEIGHTS, type RankedCity } from "@/lib/scoring";
+import { registry, RENT_SOURCE_ID } from "@/lib/registry";
+import { rank, type RankedCity } from "@/lib/scoring";
 import { decodePlan } from "@/lib/plan";
-import { EligibilityCards } from "@/components/navigator/EligibilityCards";
-import { CostTable } from "@/components/navigator/CostTable";
-import { ProviderList } from "@/components/navigator/ProviderList";
 import { PlanActions, LeadForm } from "@/components/plan/PlanControls";
 import { PlanResults } from "@/components/plan/PlanResults";
 import { ConfidenceBadge, SiteLinkFlag } from "@/components/ui/badge";
@@ -21,7 +17,7 @@ function collectFactIds(ranked: RankedCity[]): string[] {
   if (blr) ids.add(blr.id);
   for (const r of ranked) {
     for (const f of [
-      registry.numericFact(r.city, "office_rent_grade_a", "src_office_annual_2025"),
+      registry.numericFact(r.city, "office_rent_grade_a", RENT_SOURCE_ID),
       registry.numericFact(r.city, "gcc_talent_share_pct"),
       registry.numericFact(r.city, "attrition_pct"),
       registry.numericFact(r.city, "swe_ctc_discount_vs_blr_pct"),
@@ -68,7 +64,6 @@ export default function PlanPage({ params }: { params: { id: string } }) {
   const ranked = rank(registry, plan.inputs, weights);
   const rankedCities = ranked.filter((r) => r.score !== null);
   const unranked = ranked.filter((r) => r.score === null);
-  const top3 = rankedCities.slice(0, 3);
   const factIds = collectFactIds(ranked);
   const usedSourceIds = sourceIdsForUsedFacts(factIds);
   const sources = registry.sources
@@ -207,8 +202,9 @@ export default function PlanPage({ params }: { params: { id: string } }) {
           })}
         </ol>
         <p className="text-xs text-muted mt-3">
-          {registry.facts.length} facts and {registry.policies.length} policies in the registry seed as
-          of 11 Oct 2026. AI-approved facts added after this plan was saved are not included.
+          {registry.facts.length} facts and {registry.policies.length} policies in the registry seed,
+          updated {registry.counts.updated}. AI-approved facts added after this plan was saved are
+          not included.
         </p>
       </Card>
 

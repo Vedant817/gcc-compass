@@ -17,7 +17,6 @@ import { readOverlay } from "@/lib/overlay";
 import type { Fact } from "@/lib/types";
 import { ConfidenceBadge, SiteLinkFlag, UnverifiedBadge } from "@/components/ui/badge";
 import { renderInline } from "@/lib/markdown";
-import { CitationChip } from "@/components/CitationChip";
 import { Card, EmptyState, SkeletonRows, Table, Td, Th, Tr } from "@/components/ui/table";
 import { factValue, inrNum } from "@/lib/format";
 
@@ -34,13 +33,11 @@ export interface TruthPreset {
   bars?: BarSpec[];
   /** comparison mode: one bar per city, using one methodology */
   oneBarPerCity?: { sourceId?: string; metric: string; unit?: string };
-  tableFilters?: { metric?: string; entity?: string };
   defaultCity?: string;
   cityChoice?: boolean;
   toggleCentres?: boolean;
   /** every entity with the metric, not just India (used by the /truth?metric= deep link) */
   allEntities?: boolean;
-  headlineOver?: string[]; // fact ids the headline is computed over (defaults to bars)
 }
 
 const CITY_CHOICES = ["bengaluru", "hyderabad", "pune", "chennai"];
@@ -387,11 +384,13 @@ interface BarShapeProps {
 function BarShape({ x = 0, y = 0, width = 0, height = 0, payload, domainMax }: BarShapeProps) {
   const value = payload?.value_num ?? 0;
   const max = payload?.rangeMax ?? value;
-  const endX = x + (width * max) / value;
   const cy = y + height / 2;
+  const fill = payload?.shade === "primary" ? "#304359" : "#778DA9";
+  if (!(value > 0)) return <rect x={x} y={y} width={width} height={height} fill={fill} />;
+  const endX = x + (width * max) / value;
   return (
     <g>
-      <rect x={x} y={y} width={width} height={height} fill={payload?.shade === "primary" ? "#304359" : "#778DA9"} />
+      <rect x={x} y={y} width={width} height={height} fill={fill} />
       {payload?.rangeMax !== null && payload?.rangeMax !== undefined && (
         <g>
           <line x1={x + width} y1={cy} x2={endX} y2={cy} stroke="#304359" strokeWidth={2} />
@@ -447,7 +446,7 @@ function WhyNote({ factIds }: { factIds: string[] }) {
       {state === "done" && note && (
         <>
           <p className="text-sm">
-            {note.cited_ids.length === 0 ? "Only one source; nothing to reconcile." : renderWithChips(note.note)}
+            {note.cited_ids.length === 0 ? "Only one source; nothing to reconcile." : renderInline(note.note)}
           </p>
           <p className="text-xs text-muted mt-1">
             Written by the model from the definition, date and source type fields only.{" "}
@@ -461,8 +460,5 @@ function WhyNote({ factIds }: { factIds: string[] }) {
   );
 }
 
-export function renderWithChips(text: string) {
-  return renderInline(text);
-}
 
 

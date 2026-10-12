@@ -107,7 +107,6 @@ await page.getByRole("button", { name: "Lowest cost" }).first().click();
 await page.waitForTimeout(200);
 
 // 3. Ask --------------------------------------------------------------------
-const aiOk = process.env.AI_OPTIONAL !== "1";
 try {
   await page.goto(`${BASE}/ask`, { waitUntil: "networkidle" });
   await page.getByRole("button", { name: "What would Maharashtra pay me?" }).click();
@@ -132,6 +131,7 @@ try {
   check("extraction found TS fact", /gcc_policy_status/.test(rowsText) && /TS/.test(rowsText));
   await page.getByRole("button", { name: "Approve" }).first().click();
   await page.waitForSelector("text=AI-extracted · human-approved", { timeout: 15000 });
+  check("approve toast renders", await page.locator('[role="status"]').count() > 0);
   const headerCount = await page.locator("header").innerText();
   check("registry count grows after approve", /71 facts/.test(headerCount), headerCount.match(/Registry:.*/)?.[0]);
   // survive a refresh
@@ -175,4 +175,5 @@ if (failed.length) {
   console.log("FAILURES:", failed.map((f) => f.name).join(", "));
   process.exit(1);
 }
+
 

@@ -121,9 +121,9 @@ export default function MethodPage() {
 
         <Card title="Neutrality">
           <p className="text-sm">
-            Flexiple is listed as a provider with an “Our service” tag, alphabetically alongside the
-            alternatives, and takes no part in the score. The registry&apos;s facts about Flexiple
-            (the Managed Teams fee) are one row among seventy, cited like any other.
+          Flexiple is listed as a provider with an “Our service” tag, alphabetically alongside the
+          alternatives, and takes no part in the score. The registry&apos;s facts about Flexiple (the
+          Managed Teams fee) are one row among {c.facts}, cited like any other.
           </p>
         </Card>
 
@@ -132,7 +132,7 @@ export default function MethodPage() {
             The scoring, eligibility and cost logic is a port of{" "}
             <span className="font-mono text-[12px]">pack/scripts/reference_scoring.py</span>, and the
             unit tests reproduce{" "}
-            <span className="font-mono text-[12px]">seed/expected_demo_output.json</span> (Pune 77.2,
+            <span className="font-mono text-[12px]">data/seed/expected_demo_output.json</span> (Pune 77.2,
             Hyderabad 57.2, Bengaluru 31.8 on Lowest cost; Pune 3-year ≈ ₹44.69 Cr). Run{" "}
             <span className="font-mono text-[12px]">npm test</span> and{" "}
             <span className="font-mono text-[12px]">python3 pack/scripts/validate_seed.py</span>.

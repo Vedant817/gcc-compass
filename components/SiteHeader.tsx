@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { seedRegistry, latestAsOf } from "@/lib/registry";
-import { readOverlayFacts } from "@/lib/overlay";
+import { readOverlay } from "@/lib/overlay";
 const NAV = [
   { href: "/truth", label: "Truth table" },
   { href: "/navigator", label: "Navigator" },
@@ -14,10 +14,13 @@ const NAV = [
 
 export function SiteHeader() {
   const pathname = usePathname();
-  const [overlayCount, setOverlayCount] = useState(0);
+  const [overlay, setOverlay] = useState({ facts: 0, sources: 0 });
 
   useEffect(() => {
-    const refresh = () => setOverlayCount(readOverlayFacts().length);
+    const refresh = () => {
+      const o = readOverlay();
+      setOverlay({ facts: o.facts.length, sources: o.sources.length });
+    };
     refresh();
     window.addEventListener("gcc-compass:overlay", refresh);
     window.addEventListener("storage", refresh);
@@ -27,7 +30,9 @@ export function SiteHeader() {
     };
   }, []);
 
-  const facts = seedRegistry.facts.length + overlayCount;
+  // counts are live: the seed plus anything approved in this browser
+  const facts = seedRegistry.facts.length + overlay.facts;
+  const sources = seedRegistry.sources.length + overlay.sources;
   const updated = latestAsOf();
   const onPlan = pathname?.startsWith("/plan");
 
@@ -60,12 +65,13 @@ export function SiteHeader() {
           )}
         </nav>
         <div className="ml-auto hidden sm:block text-xs text-white/70 tabular-nums whitespace-nowrap">
-          Registry: {facts} facts · {seedRegistry.sources.length} sources · updated {updated}
+          Registry: {facts} facts · {sources} sources · updated {updated}
         </div>
       </div>
       <div className="sm:hidden px-6 pb-2 text-xs text-white/70 tabular-nums">
-        Registry: {facts} facts · {seedRegistry.sources.length} sources · updated {updated}
+        Registry: {facts} facts · {sources} sources · updated {updated}
       </div>
     </header>
   );
 }
+

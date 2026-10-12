@@ -51,22 +51,42 @@ export function CostTable({
           ))}
         </>
       )}
-      <div className="mt-3 border-t border-rule pt-3 text-sm">
-        <h4 className="text-[13px] font-medium text-slate mb-1">Formula and assumptions</h4>
-        <p className="font-mono text-[12px] bg-paper border border-rule rounded px-2 py-1 mb-2">
-          rent_y = seats_y × {SQFT_PER_SEAT} sq ft × rent ₹/sq ft/month × 12 · salary_y = seats_y ×
-          CTC × 1.099^(y−1)
-        </p>
-        <ul className="space-y-0.5 text-[13px]">
-          {COST_ASSUMPTIONS.map((a) => (
-            <li key={a.id}>
-              <span className="font-medium">{a.id}</span> {a.text}
-            </li>
-          ))}
-        </ul>
-        <p className="text-xs text-muted mt-2">{COST_EXCLUDES}</p>
-      </div>
+      <FormulaNote reg={reg} inputs={inputs} cities={cities} />
     </Card>
+  );
+}
+
+/** The formula with the live constants: sq ft from A1, escalator from the registry. */
+function FormulaNote({
+  reg,
+  inputs,
+  cities,
+}: {
+  reg: RegistryView;
+  inputs: NavigatorInputs;
+  cities: RankedCity[];
+}) {
+  const est = useMemo(
+    () => (cities.length > 0 ? threeYear(reg, cities[0].city, inputs) : null),
+    [reg, cities, inputs],
+  );
+  const inc = est?.increment_pct ?? null;
+  return (
+    <div className="mt-3 border-t border-rule pt-3 text-sm">
+      <h4 className="text-[13px] font-medium text-slate mb-1">Formula and assumptions</h4>
+      <p className="font-mono text-[12px] bg-paper border border-rule rounded px-2 py-1 mb-2">
+        rent_y = seats_y × {SQFT_PER_SEAT} sq ft × rent ₹/sq ft/month × 12 · salary_y = seats_y ×
+        CTC × {inc === null ? "(1 + increment)^" : `(1 + ${(inc / 100).toFixed(3)})^`}(y−1)
+      </p>
+      <ul className="space-y-0.5 text-[13px]">
+        {COST_ASSUMPTIONS.map((a) => (
+          <li key={a.id}>
+            <span className="font-medium">{a.id}</span> {a.text}
+          </li>
+        ))}
+      </ul>
+      <p className="text-xs text-muted mt-2">{COST_EXCLUDES}</p>
+    </div>
   );
 }
 
@@ -122,7 +142,7 @@ function CityCost({
       <p className="text-xs text-muted mt-1">
         {est.rent_missing
           ? "No Grade A rent figure in the registry for this city."
-          : `Rent: ₹${inrNum(est.rent as number)}/sq ft/month (Grade A, 2025).`}{" "}
+          : `Rent: ₹${inrNum(est.rent as number)}/sq ft/month (Grade A${est.rent_as_of ? `, ${est.rent_as_of}` : ""}).`}{" "}
         {est.ctc !== null
           ? `CTC: ₹${est.ctc.toFixed(1)} lakh mid-level SWE. Salary increment ${est.increment_pct}%/yr.`
           : "CTC: not in the registry."}

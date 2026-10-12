@@ -82,9 +82,9 @@ export function writeStoredPlan(plan: StoredPlan): void {
   write(PLAN_KEY, plan);
 }
 
-/** Next free fact id: the registry's highest f### + 1 (seed uses up to f700). */
+/** Next free fact id: one past the highest f### id the registry has ever issued. */
 export function nextFactId(existing: Fact[]): string {
-  let max = 700;
+  let max = 0;
   for (const f of existing) {
     const m = /^f(\d{3,})$/.exec(f.id);
     if (m) max = Math.max(max, Number(m[1]));
@@ -92,9 +92,9 @@ export function nextFactId(existing: Fact[]): string {
   return `f${String(max + 1).padStart(3, "0")}`;
 }
 
-/** Next free source id for a brand-new source. */
-export function nextSourceId(existing: Source[], seedCount: number): string {
-  let max = seedCount;
+/** Next free source id for a brand-new source, past every src_N the registry has issued. */
+export function nextSourceId(existing: Source[]): string {
+  let max = 0;
   for (const s of existing) {
     const m = /^src_(\d+)$/.exec(s.id);
     if (m) max = Math.max(max, Number(m[1]));

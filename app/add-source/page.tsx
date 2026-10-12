@@ -43,6 +43,7 @@ interface Row {
   suggested_confidence: "H" | "M" | "L";
   quote_found: boolean;
   value_in_quote: boolean;
+  as_of_defaulted?: boolean;
 }
 
 export default function AddSourceView() {
@@ -54,6 +55,7 @@ export default function AddSourceView() {
   const [warnings, setWarnings] = useState<string[]>([]);
   const [aiOff, setAiOff] = useState(false);
   const [recentKey, setRecentKey] = useState(0);
+  const [sampleLoaded, setSampleLoaded] = useState(false);
   const toast = useToast();
 
   const patchMeta = (p: Partial<Meta>) => setMeta((m) => ({ ...m, ...p }));
@@ -63,6 +65,7 @@ export default function AddSourceView() {
     setText(`${TELANGANA_SAMPLE.text}\n\n(Sample text (paraphrased for demo))`);
     setRows(null);
     setError(null);
+    setSampleLoaded(true);
   };
 
   const extract = async () => {
@@ -119,7 +122,7 @@ export default function AddSourceView() {
     let newSources = overlay.sources;
     if (!sourceId) {
       const url = meta.url.trim();
-      sourceId = nextSourceId(overlay.sources, 28);
+      sourceId = nextSourceId([...registry.sources, ...overlay.sources]);
       const reliability: Source["reliability"] =
         meta.type === "official_policy" ? "H" : meta.type === "vendor_blog" ? "L" : "M";
       const source: Source = {
@@ -227,7 +230,7 @@ export default function AddSourceView() {
               Load Telangana sample
             </button>
           </div>
-          {text.includes("(Sample text (paraphrased for demo))") && (
+          {sampleLoaded && (
             <p className="text-xs text-muted mt-2">Sample text (paraphrased for demo).</p>
           )}
           {error && (
@@ -261,3 +264,4 @@ export default function AddSourceView() {
     </div>
   );
 }
+

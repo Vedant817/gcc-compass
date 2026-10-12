@@ -72,12 +72,18 @@ export function EligibilityCards({
               <div className="text-sm">
                 {state?.gcc_policy_status === "none_known" && (
                   <p className="text-status-noteligible">
-                    No GCC fiscal policy on record (2025). {state.note ?? ""}
+                    {(() => {
+                      const asOf = reg.factsFor(stateId, "gcc_policy_status")[0]?.as_of;
+                      return asOf
+                        ? `No GCC fiscal policy on record (${asOf}).`
+                        : "No GCC fiscal policy on record.";
+                    })()}{" "}
+                    {state.note ?? ""}
                   </p>
                 )}
                 {state?.gcc_policy_status === "expected" && (
                   <p className="flex flex-wrap items-center gap-2 text-status-needscheck">
-                    Policy expected [UNVERIFIED]. {state.note ?? ""}
+                    Policy expected. {state.note ?? ""}
                     {state.unverified && <UnverifiedBadge />}
                   </p>
                 )}

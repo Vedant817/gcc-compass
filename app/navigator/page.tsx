@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { NavigatorForm, type FormErrors } from "@/components/navigator/NavigatorForm";
 import { NavigatorResults } from "@/components/navigator/NavigatorResults";
@@ -8,12 +8,12 @@ import { DEMO_PERSONA, validate } from "@/components/navigator/shared";
 import { PRESET_WEIGHTS } from "@/lib/scoring";
 import { encodePlan } from "@/lib/plan";
 import { writeStoredPlan } from "@/lib/overlay";
-import { Button } from "@/components/ui/button";
 import { Card, EmptyState } from "@/components/ui/table";
 import type { NavigatorInputs, Weights } from "@/lib/types";
 
 export default function NavigatorView() {
-  const router = useRouter();  const [inputs, setInputs] = useState<NavigatorInputs>(DEMO_PERSONA);
+  const router = useRouter();
+  const [inputs, setInputs] = useState<NavigatorInputs>(DEMO_PERSONA);
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitted, setSubmitted] = useState<NavigatorInputs | null>(null);
   const [weights, setWeights] = useState<Weights>(PRESET_WEIGHTS.cost);
@@ -69,11 +69,15 @@ export default function NavigatorView() {
               setInputs(DEMO_PERSONA);
               setWeights(PRESET_WEIGHTS.cost);
               setErrors({});
+              setSubmitted(null);
             }}
           >
             Load demo company
           </button>
-          <span className="text-xs text-muted">400-person US fintech · 40 → 120 seats</span>
+          <span className="text-xs text-muted">
+            {DEMO_PERSONA.company_size.toLocaleString("en-IN")}-person {DEMO_PERSONA.hq_country}{" "}
+            company · {DEMO_PERSONA.seats_y1} → {DEMO_PERSONA.seats_y3} seats
+          </span>
         </div>
         <NavigatorForm value={inputs} errors={errors} onChange={patch} onSubmit={submit} />
       </div>

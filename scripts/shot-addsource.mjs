@@ -1,5 +1,9 @@
 import { chromium } from "playwright";
 const BASE = process.env.BASE_URL;
+if (!BASE) {
+  console.error("Set BASE_URL, e.g. BASE_URL=http://localhost:3100 node scripts/shot-addsource.mjs");
+  process.exit(1);
+}
 const SHOTS = process.env.SHOTS_DIR || "screenshots";
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });

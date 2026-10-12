@@ -1,5 +1,5 @@
 import { cityRaw } from "./scoring";
-import type { RegistryView } from "./registry";
+import { RENT_SOURCE_ID, type RegistryView } from "./registry";
 import type { NavigatorInputs } from "./types";
 
 export const SQFT_PER_SEAT = 150; // A1
@@ -30,6 +30,7 @@ export interface CostEstimate {
   rent_missing: boolean;
   ctc: number | null;
   rent: number | null;
+  rent_as_of: string | null;
   increment_pct: number | null;
 }
 
@@ -38,7 +39,7 @@ export interface CostEstimate {
  * smoothing, no rounding into new figures beyond the 1-decimal display value.
  */
 export function threeYear(reg: RegistryView, cityId: string, inputs: NavigatorInputs): CostEstimate {
-  const rentFact = reg.numericFact(cityId, "office_rent_grade_a", "src_office_annual_2025");
+  const rentFact = reg.numericFact(cityId, "office_rent_grade_a", RENT_SOURCE_ID);
   const rent = rentFact?.value_num ?? null;
   const { raw } = cityRaw(reg, cityId, inputs);
   const ctc = raw.salary;
@@ -71,6 +72,7 @@ export function threeYear(reg: RegistryView, cityId: string, inputs: NavigatorIn
     rent_missing: rent === null,
     ctc,
     rent,
+    rent_as_of: rentFact?.as_of ?? null,
     increment_pct: incPct,
   };
 }
@@ -78,3 +80,4 @@ export function threeYear(reg: RegistryView, cityId: string, inputs: NavigatorIn
 function round1(x: number): number {
   return Math.round(x * 10) / 10;
 }
+
