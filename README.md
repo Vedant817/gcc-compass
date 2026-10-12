@@ -121,6 +121,11 @@ facts live in the browser's localStorage as an overlay, and a plan is encoded in
 (`lz-string` + base64url), so a shared link reopens the same plan anywhere. Leads POST to
 `/api/leads` and are logged server-side; no email is sent.
 
+Both fonts are vendored in `app/fonts/` and loaded with `next/font/local`, so the build
+never fetches Google Fonts at build time — a build-time network hiccup there fails the
+whole deployment. `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1` is set on the Vercel project so
+installs don't download browsers the app never uses at runtime.
+
 ## Known limitations
 
 - **Seed size.** 70 facts is enough to demo the shape of the problem, not to answer
