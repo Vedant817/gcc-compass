@@ -47,6 +47,7 @@ interface BarDatum {
   label: string;
   value_num: number;
   valueLabel: string;
+  shortLabel: string;
   rangeMax: number | null;
   shade: "primary" | "secondary";
   fact: Fact;
@@ -91,6 +92,7 @@ export function TruthView({ presets }: { presets: TruthPreset[] }) {
           label: reg.cityName(fact.entity_id),
           value_num: fact.value_num as number,
           valueLabel: factValue(fact),
+          shortLabel: fact.value_text ?? inrNum(fact.value_num as number),
           rangeMax: null,
           shade: "primary" as const,
           fact,
@@ -116,6 +118,7 @@ export function TruthView({ presets }: { presets: TruthPreset[] }) {
           label: `${src?.publisher ?? f.source_id} · ${f.as_of}`,
           value_num: f.value_num,
           valueLabel: factValue(f),
+          shortLabel: f.value_text ?? inrNum(f.value_num as number),
           rangeMax: rangeMaxOf(f),
           shade: spec.shade,
           fact: f,
@@ -161,8 +164,16 @@ export function TruthView({ presets }: { presets: TruthPreset[] }) {
     () => Math.max(...bars.map((b) => b.rangeMax ?? b.value_num), 1),
     [bars],
   );
-
+  // round the axis up to a nice number so the longest bar doesn't end on the
+  // plot edge, where its value label collides with the axis
+  const axisMax = useMemo(() => niceMax(domainMax), [domainMax]);
   const axisWidth = Math.max(150, Math.min(250, Math.round(chartWidth * 0.36)));
+  // narrow charts get a compact label set: shorter category and value labels,
+  // and a smaller right margin, so nothing wraps or collides
+  const compact = chartWidth < 700;
+  const chartMargin = compact
+    ? { top: 4, right: 84, bottom: 24, left: 4 }
+    : { top: 4, right: 132, bottom: 24, left: 8 };
 
   return (
     <div className="flex flex-col gap-5">
@@ -218,7 +229,7 @@ export function TruthView({ presets }: { presets: TruthPreset[] }) {
       {preset && <p className="text-sm text-muted -mt-2">{preset.intro}</p>}
 
       {headline && (
-        <p className="serif text-[22px]">
+        <p className="serif text-[19px] sm:text-[22px] leading-snug">
           {headline.count} sources · {inrNum(headline.min)} to {inrNum(headline.max)} · spread{" "}
           {headline.spread}%
         </p>
@@ -240,13 +251,13 @@ export function TruthView({ presets }: { presets: TruthPreset[] }) {
               <BarChart
                 layout="vertical"
                 data={bars}
-                margin={{ top: 4, right: 132, bottom: 24, left: 8 }}
+                margin={chartMargin}
                 barCategoryGap="22%"
               >
                 <CartesianGrid horizontal={false} stroke="#E9ECEF" />
                 <XAxis
                   type="number"
-                  domain={[0, domainMax]}
+                  domain={[0, axisMax]}
                   tick={{ fill: "#6C757D", fontSize: 12 }}
                   stroke="#E9ECEF"
                   tickFormatter={(v: number) => inrNum(v)}
@@ -257,6 +268,9 @@ export function TruthView({ presets }: { presets: TruthPreset[] }) {
                   width={axisWidth}
                   tick={{ fill: "#6C757D", fontSize: 12 }}
                   stroke="#E9ECEF"
+                  tickFormatter={(v: string) =>
+                    compact && v.length > 26 ? `${v.slice(0, 25).trimEnd()}…` : v
+                  }
                 />
                 <Tooltip
                   cursor={{ fill: "rgba(48,67,89,0.05)" }}
@@ -281,7 +295,7 @@ export function TruthView({ presets }: { presets: TruthPreset[] }) {
                     <Cell key={b.key} fill={b.shade === "primary" ? "#304359" : "#778DA9"} />
                   ))}
                   <LabelList
-                    dataKey="valueLabel"
+                    dataKey={compact ? "shortLabel" : "valueLabel"}
                     position="right"
                     fill="#304359"
                     fontSize={12}
@@ -364,6 +378,14 @@ export function TruthView({ presets }: { presets: TruthPreset[] }) {
 }
 
 /** Top of a published range ("1,800-1,900" → 1900), for the range line. */
+/** Round an axis maximum up to a friendly value so bars don't end on the plot edge. */
+function niceMax(v: number): number {
+  if (!(v > 0)) return 1;
+  const mag = Math.pow(10, Math.floor(Math.log10(v)));
+  const norm = v / mag; // 1..10
+  const step = norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 5 ? 5 : 10;
+  return step * mag;
+}
 function rangeMaxOf(f: Fact): number | null {
   if (!f.value_text) return null;
   const nums = f.value_text.match(/\d[\d,]*(?:\.\d+)?/g);
@@ -459,6 +481,10 @@ function WhyNote({ factIds }: { factIds: string[] }) {
     </Card>
   );
 }
+
+
+
+
 
 
 

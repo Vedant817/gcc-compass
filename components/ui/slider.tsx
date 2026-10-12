@@ -32,10 +32,7 @@ export function Slider({
       value={value}
       aria-label={ariaLabel}
       onChange={(e) => onChange(Number(e.target.value))}
-      className={cn("w-full h-1.5 bg-rule rounded appearance-none cursor-pointer", className)}
-      style={{
-        accentColor: "#415977",
-      }}
+      className={cn("w-full h-6 bg-transparent rounded appearance-none cursor-pointer", className)}
     />
   );
 }

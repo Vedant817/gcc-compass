@@ -59,9 +59,12 @@ export function EligibilityCards({
       title="Incentive eligibility"
       aside={<span className="text-xs text-muted">Rules evaluated against your inputs; nothing is assumed</span>}
     >
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="grid md:grid-cols-2 gap-4 items-stretch">
         {cards.map(({ stateId, state, evaluated, cityId }) => (
-          <article key={stateId} className="border border-rule rounded bg-white p-3">
+          <article
+            key={stateId}
+            className="border border-rule rounded bg-white p-3 flex flex-col"
+          >
             <header className="flex items-baseline justify-between gap-2 mb-2">
               <h4 className="text-[15px] font-medium">
                 {state?.name ?? stateId}

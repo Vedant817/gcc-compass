@@ -95,9 +95,14 @@ export function NavigatorResults({
             <h4 className="text-[13px] font-medium text-slate mb-1">Not enough data to rank</h4>
             <ul className="text-sm text-muted space-y-1">
               {unranked.map((r) => (
-                <li key={r.city}>
-                  <span className="text-ink">{reg.cityName(r.city)}</span>:{" "}
-                  {missingText(reg, r)}
+                <li key={r.city} className="flex gap-2">
+                  <span className="text-muted select-none" aria-hidden="true">
+                    —
+                  </span>
+                  <span>
+                    <span className="text-ink">{reg.cityName(r.city)}</span>:{" "}
+                    {missingText(reg, r)}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -261,7 +266,7 @@ function WeightSliders({
         {Object.keys(PRESET_LABELS).map((p) => (
           <button
             key={p}
-            className={`px-2.5 py-1 text-sm border rounded ${
+            className={`h-8 px-2.5 text-sm border rounded ${
               activePriority === p
                 ? "border-ink bg-ink text-white"
                 : "border-rule bg-white text-ink hover:border-slate-light"
@@ -272,17 +277,19 @@ function WeightSliders({
           </button>
         ))}
       </div>
-      <div className="grid md:grid-cols-2 gap-x-8 gap-y-3">
+      <div className="grid md:grid-cols-2 gap-x-8 gap-y-1">
         {COMPONENTS.map((k) => (
-          <div key={k} className="flex items-center gap-3">
-            <span className="w-24 text-[13px] text-slate">{COMPONENT_LABELS[k]}</span>
+          <div key={k} className="flex items-center gap-3 h-9">
+            <span className="w-28 shrink-0 text-[13px] text-slate whitespace-nowrap">
+              {COMPONENT_LABELS[k]}
+            </span>
             <Slider
               id={`w-${k}`}
               value={weights[k]}
               onChange={(v) => onChange({ ...weights, [k]: v })}
               ariaLabel={COMPONENT_LABELS[k]}
             />
-            <span className="w-16 text-right text-sm tabular-nums">
+            <span className="w-12 text-right text-sm tabular-nums">
               {Math.round(norm[k] * 100)}%
             </span>
           </div>

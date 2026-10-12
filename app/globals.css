@@ -88,14 +88,55 @@ textarea:focus {
 }
 input[type="checkbox"],
 input[type="radio"] {
-  width: auto;
+  width: 1rem;
+  height: 1rem;
   accent-color: #415977;
 }
+/* Range inputs: a 24px grabbable area around an 8px track with a 16px ink thumb. */
 input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
   padding: 0;
   border: none;
   background: transparent;
-  accent-color: #415977;
+  height: 24px;
+  width: 100%;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 8px;
+  background: #e9ecef;
+  border-radius: 999px;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -4px;
+  border-radius: 50%;
+  background: #304359;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 1px #e9ecef;
+}
+input[type="range"]:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 2px #f1cf9d;
+}
+input[type="range"]::-moz-range-track {
+  height: 8px;
+  background: #e9ecef;
+  border-radius: 999px;
+}
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  background: #304359;
+  box-shadow: 0 0 0 1px #e9ecef;
+}
+input[type="range"]:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 2px #f1cf9d;
 }
 label {
   font-size: 13px;
