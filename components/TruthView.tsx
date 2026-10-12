@@ -228,7 +228,14 @@ export function TruthView({ presets }: { presets: TruthPreset[] }) {
       )}
 
       {bars.length === 0 ? (
-        <EmptyState>No facts for this metric yet. Add a source.</EmptyState>
+        tableFacts.length > 0 ? (
+          <Card className="py-4 text-sm text-muted">
+            No numeric figures for this metric — every fact here is published as words, so the table
+            below lists them all.
+          </Card>
+        ) : (
+          <EmptyState>No facts for this metric yet. Add a source.</EmptyState>
+        )
       ) : (
         <Card className="py-4">
           <div ref={chartRef} style={{ height: bars.length * 30 + 48 }} className="overflow-x-auto">

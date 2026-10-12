@@ -11,6 +11,7 @@ export function Slider({
   value,
   onChange,
   className,
+  ariaLabel,
 }: {
   id?: string;
   min?: number;
@@ -19,6 +20,7 @@ export function Slider({
   value: number;
   onChange: (v: number) => void;
   className?: string;
+  ariaLabel?: string;
 }) {
   return (
     <input
@@ -28,6 +30,7 @@ export function Slider({
       max={max}
       step={step}
       value={value}
+      aria-label={ariaLabel}
       onChange={(e) => onChange(Number(e.target.value))}
       className={cn("w-full h-1.5 bg-rule rounded appearance-none cursor-pointer", className)}
       style={{

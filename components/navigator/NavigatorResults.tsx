@@ -175,19 +175,21 @@ function RankRow({
       </Td>
       <Td>
         <span className="flex h-3 w-40 overflow-hidden border border-rule" title={scoreTitle(r, w)}>
-          {COMPONENTS.map((k) => {
-            const x = r.components[k];
-            if (x === null) return null;
-            return (
-              <span
-                key={k}
-                style={{
-                  width: `${w[k] * x * 100}%`,
-                  background: COMPONENT_COLOURS[k],
-                }}
-              />
-            );
-          })}
+        {COMPONENTS.map((k) => {
+          const x = r.components[k];
+          if (x === null) return null;
+          const pct = w[k] * x;
+          if (pct <= 0) return null;
+          return (
+            <span
+              key={k}
+              style={{
+                width: `${pct * 100}%`,
+                background: COMPONENT_COLOURS[k],
+              }}
+            />
+          );
+        })}
         </span>
       </Td>
       <Td numeric>{r.raw.talent === null ? "—" : `${r.raw.talent}%`}</Td>
@@ -276,7 +278,7 @@ function WeightSliders({
               id={`w-${k}`}
               value={weights[k]}
               onChange={(v) => onChange({ ...weights, [k]: v })}
-              aria-label={COMPONENT_LABELS[k]}
+              ariaLabel={COMPONENT_LABELS[k]}
             />
             <span className="w-16 text-right text-sm tabular-nums">
               {Math.round(norm[k] * 100)}%

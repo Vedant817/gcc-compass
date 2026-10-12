@@ -6,8 +6,9 @@ import { evaluatePolicy } from "@/lib/eligibility";
 import type { NavigatorInputs, Policy } from "@/lib/types";
 import type { RankedCity } from "@/lib/scoring";
 import { Card } from "@/components/ui/table";
-import { StatusPill, UnverifiedBadge, ConfidenceBadge, SiteLinkFlag } from "@/components/ui/badge";
+import { StatusPill, UnverifiedBadge, ConfidenceBadge, SiteLinkFlag, AiExtractedBadge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/button";
+import { factValue } from "@/lib/format";
 
 const INCENTIVE_TYPE_LABELS: Record<string, string> = {
   capex: "Capex",
@@ -83,6 +84,31 @@ export function EligibilityCards({
                 {state?.gcc_policy_status === "active" && (
                   <p className="text-muted">No policy details in the registry yet.</p>
                 )}
+                {(() => {
+                  const statusFacts = reg.factsFor(stateId, "gcc_policy_status");
+                  if (statusFacts.length === 0) return null;
+                  return (
+                    <ul className="mt-2 space-y-1">
+                      {statusFacts.map((f) => {
+                        const src = reg.source(f.source_id);
+                        return (
+                          <li key={f.id} className="text-[13px] flex flex-wrap items-center gap-2">
+                            <span className="font-mono text-[11px] text-muted">{f.id}</span>
+                            <span>{f.value_text ?? factValue(f)}</span>
+                            <span className="text-muted">(as of {f.as_of})</span>
+                            {src && (
+                              <LinkButton href={src.url} variant="ghost" className="px-0 py-0 text-xs">
+                                {src.publisher}
+                              </LinkButton>
+                            )}
+                            {src?.url_precision === "domain_only" && <SiteLinkFlag />}
+                            {f.extracted_by === "ai" && <AiExtractedBadge />}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  );
+                })()}
                 <p className="text-xs text-muted mt-2">
                   Counts as 0 for the incentives component.
                 </p>

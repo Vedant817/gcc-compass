@@ -18,6 +18,12 @@ export function llmConfigured(): boolean {
 
 const TIMEOUT_MS = 40_000;
 
+/**
+ * Total budget for one call across the whole model chain. Without this, a chain
+ * of unhealthy models turns a "wait a minute" into a multi-minute hang.
+ */
+const CHAIN_BUDGET_MS = 25_000;
+
 /** Primary model first, then any fallbacks. */
 function models(): string[] {
   const primary = process.env.LLM_MODEL as string;
@@ -26,6 +32,27 @@ function models(): string[] {
     .map((s) => s.trim())
     .filter(Boolean);
   return [primary, ...extra.filter((m) => m !== primary)];
+}
+
+/**
+ * Short-lived memory of rate-limited or overloaded models, so a request doesn't
+ * pay the whole chain's latency on every call. Cooldowns are per warm instance.
+ */
+const coolingUntil = new Map<string, number>();
+const COOLDOWN_MS: Record<number, number> = { 429: 120_000, 503: 60_000 };
+
+function cooling(model: string): boolean {
+  const until = coolingUntil.get(model);
+  return until !== undefined && Date.now() < until;
+}
+
+function markUnhealthy(model: string, status: number): void {
+  const ms = COOLDOWN_MS[status];
+  if (ms) coolingUntil.set(model, Date.now() + ms);
+}
+
+function markHealthy(model: string): void {
+  coolingUntil.delete(model);
 }
 
 interface ChatOptions {
@@ -52,12 +79,32 @@ export async function chat(system: string, user: string, opts: ChatOptions = {})
   };
   if (opts.json !== false) body.response_format = { type: "json_object" };
 
+  const chain = models();
+  const ordered = [
+    ...chain.filter((m) => !cooling(m)),
+    ...chain.filter((m) => cooling(m)),
+  ];
   let lastError = "";
-  for (const model of models()) {
-    for (let attempt = 0; attempt < 2; attempt++) {
-      if (attempt > 0) await new Promise((r) => setTimeout(r, attempt * 2000));
+  const deadline = Date.now() + CHAIN_BUDGET_MS;
+  for (const model of ordered) {
+    const maxAttempts = cooling(model) ? 1 : 2;
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      if (Date.now() >= deadline) {
+        throw new LLMError(
+          lastError.includes("rate-limited")
+            ? lastError
+            : "The model service is slow right now. Try again in a minute.",
+        );
+      }
+      if (attempt > 0) {
+        const backoff = attempt * 2000;
+        if (Date.now() + backoff >= deadline) continue;
+        await new Promise((r) => setTimeout(r, backoff));
+      }
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+      // each attempt is bounded by both its own timeout and the chain's budget
+      const budget = Math.max(1000, Math.min(TIMEOUT_MS, deadline - Date.now()));
+      const timer = setTimeout(() => controller.abort(), budget);
       let res: Response;
       try {
         res = await fetch(`${base}/chat/completions`, {
@@ -87,10 +134,15 @@ export async function chat(system: string, user: string, opts: ChatOptions = {})
         lastError =
           res.status === 429
             ? "The model service is rate-limited right now. Try again in a minute."
-            : `The model service returned ${res.status}.`;
+            : res.status === 503
+              ? "The model service is overloaded right now. Try again in a minute."
+              : `The model service returned ${res.status}.`;
         console.error(`[llm] ${model} attempt ${attempt + 1} -> ${res.status}: ${text.slice(0, 200)}`);
-        // rate limits and transient overload get one more try on this model
-        if (res.status === 429 || res.status === 503) continue;
+        // rate limits and transient overload get one more try, then the model rests
+        if (res.status === 429 || res.status === 503) {
+          markUnhealthy(model, res.status);
+          continue;
+        }
         break;
       }
       const data = (await res.json()) as {
@@ -102,6 +154,7 @@ export async function chat(system: string, user: string, opts: ChatOptions = {})
         console.error(`[llm] ${model} attempt ${attempt + 1} -> empty content`);
         continue;
       }
+      markHealthy(model);
       return content;
     }
   }

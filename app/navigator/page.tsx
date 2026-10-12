@@ -37,6 +37,8 @@ export default function NavigatorView() {
   const onPreset = (p: NavigatorInputs["priority"]) => {
     patch({ priority: p });
     setWeights(PRESET_WEIGHTS[p]);
+    // the shortlist on screen is the submitted snapshot, so its priority moves too
+    setSubmitted((prev) => (prev ? { ...prev, priority: p } : prev));
   };
 
   const save = () => {
