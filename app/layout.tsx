@@ -1,20 +1,26 @@
 import type { Metadata } from "next";
-import { Source_Serif_4, Jost } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SiteFooter } from "@/components/SiteFooter";
 import { ToastProvider } from "@/components/ui/toast";
 
-const sourceSerif = Source_Serif_4({
-  subsets: ["latin"],
-  weight: ["400", "600"],
+// Fonts are vendored in app/fonts so the build never depends on reaching
+// Google Fonts (a build-time fetch that fails the whole deployment).
+// Both families are variable fonts; the CSS variables they set are consumed
+// by globals.css.
+const sourceSerif = localFont({
+  src: "./fonts/sourceserif4-variable.woff2",
+  weight: "200 900",
+  style: "normal",
   variable: "--font-source-serif",
   display: "swap",
 });
 
-const jost = Jost({
-  subsets: ["latin"],
-  weight: ["400", "500"],
+const jost = localFont({
+  src: "./fonts/jost-variable.woff2",
+  weight: "100 900",
+  style: "normal",
   variable: "--font-jost",
   display: "swap",
 });
