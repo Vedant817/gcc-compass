@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { AskResponse, FactSchema, NavigatorInputsSchema, SourceSchema } from "@/lib/types";
 import { RegistryView } from "@/lib/registry";
-import { chatJson, llmConfigured } from "@/lib/llm";
+import { chatJson, llmConfigured, LLMError } from "@/lib/llm";
 import { buildAskSystem } from "@/lib/prompts";
 import { checkGrounded } from "@/lib/grounding";
 
@@ -22,6 +22,7 @@ const Body = z.object({
 
 /** Per-IP in-memory rate limit (best effort on serverless: per warm instance). */
 const MAX_TRACKED_IPS = 500;
+const RETRY_AFTER_S = "60";
 const hits = new Map<string, { count: number; reset: number }>();
 
 function rateLimited(ip: string): boolean {
@@ -39,11 +40,17 @@ function rateLimited(ip: string): boolean {
   return rec.count > 20;
 }
 
+/** Rate-limited by the model service: a 429 the browser can act on. */
+function busyResponse() {
+  return NextResponse.json(
+    { error: "Busy, try again in a minute." },
+    { status: 429, headers: { "Retry-After": RETRY_AFTER_S } },
+  );
+}
+
 export async function POST(req: Request) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
-  if (rateLimited(ip)) {
-    return NextResponse.json({ error: "Too many questions. Wait a minute." }, { status: 429 });
-  }
+  if (rateLimited(ip)) return busyResponse();
 
   let body: z.infer<typeof Body>;
   try {
@@ -68,16 +75,14 @@ export async function POST(req: Request) {
     try {
       parsed = await chatJson(system, body.question);
     } catch (e) {
-      const msg = (e as Error).message;
-      const rateLimitedByService = msg.includes("rate-limited");
+      // 429/503/timeout on the model service is a "come back in a minute", not a bug
+      if (e instanceof LLMError && e.transient) return busyResponse();
       return NextResponse.json(
         {
-          error: rateLimitedByService
-            ? msg
-            : msg === "AI is off in this deployment (no LLM_API_KEY)."
-              ? msg
+          error:
+            (e as Error).message === "AI is off in this deployment (no LLM_API_KEY)."
+              ? (e as Error).message
               : "The model didn't answer. Try again.",
-          rateLimited: rateLimitedByService,
         },
         { status: 502 },
       );

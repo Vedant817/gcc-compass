@@ -54,6 +54,7 @@ export default function AddSourceView() {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [aiOff, setAiOff] = useState(false);
+  const [cachedResult, setCachedResult] = useState(false);
   const [recentKey, setRecentKey] = useState(0);
   const [sampleLoaded, setSampleLoaded] = useState(false);
   const toast = useToast();
@@ -71,6 +72,7 @@ export default function AddSourceView() {
   const extract = async () => {
     setError(null);
     setAiOff(false);
+    setCachedResult(false);
     setExtracting(true);
     setRows(null);
     try {
@@ -98,6 +100,7 @@ export default function AddSourceView() {
         setAiOff(true);
         return;
       }
+      setCachedResult(Boolean(data.cached));
       setRows(
         (data.facts ?? []).map((f: Row) => ({
           ...f,
@@ -244,12 +247,24 @@ export default function AddSourceView() {
 
       <div>
         {rows ? (
-          <ExtractionReview
-            facts={rows}
-            warnings={warnings}
-            pastedText={text}
-            onApprove={approve}
-          />
+          <div className="flex flex-col gap-3">
+            {cachedResult && (
+              <p className="text-sm border border-rule bg-paper text-slate rounded px-3 py-2">
+                <span className="font-mono text-[11px] border border-rule bg-white px-1.5 py-0.5 mr-2">
+                  cached result
+                </span>
+                The model couldn&apos;t extract this time, so these are the pre-validated facts
+                for the built-in Telangana sample. Review them as usual — nothing enters the
+                registry without your Approve.
+              </p>
+            )}
+            <ExtractionReview
+              facts={rows}
+              warnings={warnings}
+              pastedText={text}
+              onApprove={approve}
+            />
+          </div>
         ) : (
           <Card title="Review">
             <p className="text-sm text-muted">

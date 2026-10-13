@@ -6,9 +6,17 @@
  */
 
 export class LLMError extends Error {
-  constructor(message: string) {
+  /**
+   * True when the failure is the model service being unavailable — a 429, a
+   * 503, a timeout or an unreachable host — i.e. the answer might arrive if the
+   * caller asks again in a minute. False means the answer itself was unusable.
+   */
+  readonly transient: boolean;
+
+  constructor(message: string, transient = false) {
     super(message);
     this.name = "LLMError";
+    this.transient = transient;
   }
 }
 
@@ -85,15 +93,22 @@ export async function chat(system: string, user: string, opts: ChatOptions = {})
     ...chain.filter((m) => cooling(m)),
   ];
   let lastError = "";
+  let transient = false;
   const deadline = Date.now() + CHAIN_BUDGET_MS;
-  for (const model of ordered) {
-    const maxAttempts = cooling(model) ? 1 : 2;
+  for (let index = 0; index < ordered.length; index++) {
+    const model = ordered[index];
+    // Retrying a model makes sense only when there is nothing to fail over to:
+    // the last model in the chain gets a second try, and a model already in
+    // cooldown never gets more than one. Spending the retry on a model that is
+    // about to be bypassed steals time from the model that could answer.
+    const maxAttempts = cooling(model) || index < ordered.length - 1 ? 1 : 2;
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       if (Date.now() >= deadline) {
         throw new LLMError(
           lastError.includes("rate-limited")
             ? lastError
             : "The model service is slow right now. Try again in a minute.",
+          true,
         );
       }
       if (attempt > 0) {
@@ -102,8 +117,15 @@ export async function chat(system: string, user: string, opts: ChatOptions = {})
         await new Promise((r) => setTimeout(r, backoff));
       }
       const controller = new AbortController();
-      // each attempt is bounded by both its own timeout and the chain's budget
-      const budget = Math.max(1000, Math.min(TIMEOUT_MS, deadline - Date.now()));
+      // Each attempt is bounded by its own timeout and by the chain budget. When
+      // another model is still to be tried, cap this one at half of what is left
+      // so a hanging primary can't starve the fallbacks of their turn.
+      const left = deadline - Date.now();
+      const more = index < ordered.length - 1;
+      const budget = Math.max(
+        1000,
+        Math.min(TIMEOUT_MS, more ? Math.max(2000, Math.floor(left / 2)) : left),
+      );
       const timer = setTimeout(() => controller.abort(), budget);
       let res: Response;
       try {
@@ -123,6 +145,7 @@ export async function chat(system: string, user: string, opts: ChatOptions = {})
           (e as Error).name === "AbortError"
             ? "The model took too long to answer. Try again."
             : "Could not reach the model service.";
+        transient = true;
         console.error(`[llm] ${model} attempt ${attempt + 1} failed: ${(e as Error).message}`);
         continue;
       }
@@ -137,6 +160,8 @@ export async function chat(system: string, user: string, opts: ChatOptions = {})
             : res.status === 503
               ? "The model service is overloaded right now. Try again in a minute."
               : `The model service returned ${res.status}.`;
+        // a 429/503 is a "come back in a minute", so the caller can say so
+        if (res.status === 429 || res.status === 503) transient = true;
         console.error(`[llm] ${model} attempt ${attempt + 1} -> ${res.status}: ${text.slice(0, 200)}`);
         // rate limits and transient overload get one more try, then the model rests
         if (res.status === 429 || res.status === 503) {
@@ -158,7 +183,7 @@ export async function chat(system: string, user: string, opts: ChatOptions = {})
       return content;
     }
   }
-  throw new LLMError(lastError || "The model service is unavailable.");
+  throw new LLMError(lastError || "The model service is unavailable.", transient);
 }
 
 /** Parse the model's JSON, tolerating ```json fences. Throws LLMError on bad JSON. */
