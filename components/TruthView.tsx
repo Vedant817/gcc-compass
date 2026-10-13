@@ -507,8 +507,11 @@ function BarShape({ x = 0, y = 0, width = 0, height = 0, payload, domainMax }: B
   );
 }
 
+/** The model service answered 429: busy, not broken. */
+class BusyError extends Error {}
+
 function WhyNote({ factIds }: { factIds: string[] }) {
-  const [state, setState] = useState<"loading" | "done" | "error">("loading");
+  const [state, setState] = useState<"loading" | "done" | "error" | "busy">("loading");
   const [note, setNote] = useState<{ note: string; cited_ids: string[] } | null>(null);
   const [aiOff, setAiOff] = useState(false);
 
@@ -519,7 +522,7 @@ function WhyNote({ factIds }: { factIds: string[] }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ factIds }),
     })
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("failed"))))
+      .then((r) => (r.ok ? r.json() : Promise.reject(r.status === 429 ? new BusyError() : new Error("failed"))))
       .then((d) => {
         if (d.aiOff) {
           setAiOff(true);
@@ -530,7 +533,11 @@ function WhyNote({ factIds }: { factIds: string[] }) {
         setNote(d);
         setState("done");
       })
-      .catch(() => setState("error"));
+      .catch((e: unknown) => {
+        // the note box is the one place a reader has no other cue, so a busy
+        // model has to say so here rather than reading as a failed feature
+        setState(e instanceof BusyError ? "busy" : "error");
+      });
   };
 
   useEffect(load, [factIds.join(",")]);
@@ -543,6 +550,15 @@ function WhyNote({ factIds }: { factIds: string[] }) {
           Couldn&apos;t write the note. The table above is the full data.{" "}
           <button className="text-slate underline" onClick={load}>
             Retry
+          </button>
+        </p>
+      )}
+      {state === "busy" && (
+        <p className="text-sm text-muted">
+          The note is waiting on the model, which is busy right now. The table above is the full
+          data.{" "}
+          <button className="text-slate underline" onClick={load}>
+            Try again
           </button>
         </p>
       )}
