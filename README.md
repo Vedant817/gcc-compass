@@ -84,7 +84,7 @@ TypeScript in `lib/`.
 npm install
 cp .env.example .env.local     # add your LLM keys (optional; AI features say "AI is off" without them)
 npm run dev                    # http://localhost:3000
-npm test                       # 80 unit tests: scoring, eligibility, cost, grounding, seed integrity
+npm test                       # 84 unit tests: scoring, eligibility, cost, grounding, seed integrity
 python3 reference/scripts/validate_seed.py   # seed validator from the pack
 ```
 
@@ -92,7 +92,7 @@ Verification scripts (all take `BASE_URL`, defaulting to `http://localhost:3100`
 
 ```bash
 npm run build && PORT=3100 npm run start &     # or: npm run dev
-BASE_URL=http://localhost:3100 node scripts/smoke.mjs            # 29-check demo run; writes screenshots/
+BASE_URL=http://localhost:3100 node scripts/smoke.mjs            # 30-check demo run; writes screenshots/
 BASE_URL=http://localhost:3100 node scripts/shot-addsource.mjs   # retry helper for the add-source screenshot
 BASE_URL=<url> node scripts/mobile-check.mjs                     # no 390px overflow on all five pages
 ```

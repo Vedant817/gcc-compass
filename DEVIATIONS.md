@@ -73,8 +73,8 @@ one Ask answer, one extraction), so a cold incognito run works — the five scre
 
 The free-tier quota is the deployment's weakest link. When it runs out mid-session the app
 degrades honestly: the truth table still renders the full data, the note box says the table
-above is the data, Ask shows "The model service is rate-limited right now. Try again in a
-minute." with a retry, and Add a source says the same. Nothing else stops. Once the daily
-quota resets (about 12:30 PM IST), all three features answer again. For a deployment with a
-paid key, change `LLM_MODEL`/`LLM_FALLBACK_MODELS` in the Vercel project settings — no code
-change needed.
+above is the data, Ask shows "Busy, try again in a minute." with a retry (429 + `Retry-After`),
+and Add a source falls back to the pre-validated Telangana sample rather than failing. Nothing
+else stops. Once the daily quota resets (about 12:30 PM IST), all three features answer again.
+For a deployment with a paid key, change `LLM_MODEL`/`LLM_FALLBACK_MODELS` in the Vercel
+project settings — no code change needed.
