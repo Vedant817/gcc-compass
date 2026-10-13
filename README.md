@@ -84,7 +84,7 @@ TypeScript in `lib/`.
 npm install
 cp .env.example .env.local     # add your LLM keys (optional; AI features say "AI is off" without them)
 npm run dev                    # http://localhost:3000
-npm test                       # 84 unit tests: scoring, eligibility, cost, grounding, seed integrity
+npm test                       # 107 unit tests: scoring, eligibility, cost, grounding, seed, extraction, plan context
 python3 reference/scripts/validate_seed.py   # seed validator from the pack
 ```
 
