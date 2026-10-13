@@ -5,7 +5,6 @@ import { isIP } from "node:net";
 import { Extracted } from "@/lib/types";
 import { chatJson, llmConfigured, LLMError } from "@/lib/llm";
 import { buildExtractSystem } from "@/lib/prompts";
-import { findCachedExtraction } from "@/lib/cachedExtractions";
 import { shapeExtractedFacts } from "@/lib/extraction";
 
 export const runtime = "nodejs";
@@ -234,19 +233,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Paste at least a few sentences of the source text." }, { status: 400 });
   }
 
-  // The built-in sample has a pre-validated result, so "Add a source" keeps working
-  // when the model is unavailable. Consulted only once the live path has failed.
-  const cached = findCachedExtraction(text);
-  /** Serve the pre-validated rows, labelled as cached, instead of failing. */
-  const fallback = (entry: { result: z.infer<typeof Extracted> }) =>
-    NextResponse.json({
-      facts: shapeFacts(entry.result.facts, text),
-      warnings: entry.result.warnings,
-      cached: true,
-    });
-
   if (!llmConfigured()) {
-    if (cached) return fallback(cached);
     return NextResponse.json({ aiOff: true });
   }
 
@@ -258,7 +245,6 @@ export async function POST(req: Request) {
   } catch (e) {
     const msg = (e as Error).message;
     console.error("[extract] llm failure:", msg);
-    if (cached) return fallback(cached);
     // an unavailable model is a 429 the caller can retry, not a 502 it can't
     const status = e instanceof LLMError && e.transient ? 429 : 502;
     return NextResponse.json(
@@ -284,7 +270,6 @@ export async function POST(req: Request) {
   const res = Extracted.safeParse(parsed);
   if (!res.success) {
     console.error(`[extract] schema issues: ${JSON.stringify(res.error.issues.slice(0, 6))}`);
-    if (cached) return fallback(cached);
     return NextResponse.json({ error: "The model's reply didn't match the fact schema." }, { status: 502 });
   }
 

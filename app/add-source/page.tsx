@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/table";
 import { useToast } from "@/components/ui/toast";
 import { ExtractionReview, RecentlyAdded, type ApprovedFactInput } from "@/components/add-source/ExtractionReview";
-import { TELANGANA_SAMPLE } from "@/components/add-source/addSourceShared";
+import { ALLOWED_ENTITY_IDS, entityLabel, metricLabel, metricDefinition } from "@/components/add-source/addSourceShared";
 import { registry } from "@/lib/registry";
 import { readOverlay, writeOverlay, nextFactId, nextSourceId } from "@/lib/overlay";
 import { factValue } from "@/lib/format";
@@ -56,29 +56,14 @@ export default function AddSourceView() {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [aiOff, setAiOff] = useState(false);
-  const [cachedResult, setCachedResult] = useState(false);
   const [recentKey, setRecentKey] = useState(0);
-  const [sampleLoaded, setSampleLoaded] = useState(false);
   const toast = useToast();
 
   const patchMeta = (p: Partial<Meta>) => setMeta((m) => ({ ...m, ...p }));
 
-  const loadSample = () => {
-    setMeta(TELANGANA_SAMPLE.meta);
-    // the sample text on its own; the "paraphrased" caption belongs to the UI,
-    // not to the text that gets sent for extraction
-    setText(TELANGANA_SAMPLE.text);
-    setError(null);
-    // Clicking the sample while its rows are already on screen must not wipe them:
-    // loading the same sample twice is a no-op for the review, and re-extracting
-    // only happens if the reader asks for it.
-    setSampleLoaded(true);
-  };
-
   const extract = async () => {
     setError(null);
     setAiOff(false);
-    setCachedResult(false);
     setExtracting(true);
     setRows(null);
     try {
@@ -106,7 +91,6 @@ export default function AddSourceView() {
         setAiOff(true);
         return;
       }
-      setCachedResult(Boolean(data.cached));
       setRows(
         (data.facts ?? []).map((f: Row) => ({
           ...f,
@@ -231,17 +215,11 @@ export default function AddSourceView() {
               placeholder="Paste the article or policy text the facts come from."
             />
           </Field>
-          <div className="flex items-center gap-3 mt-3">
+          <div className="mt-3">
             <Button onClick={extract} disabled={extracting || (!text.trim() && !meta.url.trim())}>
               {extracting ? "Extracting…" : "Extract facts"}
             </Button>
-            <button type="button" className="text-sm text-slate underline" onClick={loadSample}>
-              Load Telangana sample
-            </button>
           </div>
-          {sampleLoaded && (
-            <p className="text-xs text-muted mt-2">Sample text (paraphrased for demo).</p>
-          )}
           {error && (
             <p className="text-sm text-status-noteligible mt-2" role="alert">
               {error}
@@ -253,21 +231,8 @@ export default function AddSourceView() {
 
       <div>
         {rows ? (
-          // The heading stays once rows arrive. It used to swap out for the rows
-          // themselves, so the moment extraction succeeded the page lost the one
-          // label that told you what you were looking at.
           <Card title="Review">
             <div className="flex flex-col gap-3">
-              {cachedResult && (
-                <p className="text-sm border border-rule bg-paper text-slate rounded px-3 py-2">
-                  <span className="font-mono text-[11px] border border-rule bg-white px-1.5 py-0.5 mr-2">
-                    cached result
-                  </span>
-                  The model couldn&apos;t extract this time, so these are the pre-validated facts
-                  for the built-in Telangana sample. Review them as usual — nothing enters the
-                  registry without your Approve.
-                </p>
-              )}
               <ExtractionReview
                 facts={rows}
                 warnings={warnings}

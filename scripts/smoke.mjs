@@ -21,12 +21,28 @@ const AI_CHECKS = new Set([
   "why-they-differ note rendered",
   "ask cites pol_mh_2025",
   "ask mentions 50,000 payroll",
+  "approve toast renders",
   "extraction found TS fact",
   "registry count grows after approve",
   "approved fact survives refresh",
 ]);
 
 mkdirSync(SHOTS, { recursive: true });
+
+/**
+ * The navigator form starts blank, so the smoke run has to type the profile it
+ * is asserting on. These are the figures the expected numbers below come from:
+ * a 400-person US company, 40 seats in year 1 growing to 120, engineering and
+ * operations, ranked on cost.
+ */
+async function fillNavigator(page) {
+  await page.selectOption("#hq", "US");
+  await page.fill("#size", "400");
+  await page.getByLabel("Engineering", { exact: true }).check();
+  await page.getByLabel("Operations", { exact: true }).check();
+  await page.fill("#seats1", "40");
+  await page.fill("#seats3", "120");
+}
 
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
@@ -74,6 +90,7 @@ check("bengaluru shows 487, 875+, ~950", blr.some((t) => t.includes("487")) && b
 
 // 2. Navigator --------------------------------------------------------------
 await page.goto(`${BASE}/navigator`, { waitUntil: "networkidle" });
+await fillNavigator(page);
 await page.getByRole("button", { name: "Build my shortlist" }).click();
 await page.waitForSelector("section:has-text('City ranking')");
 const rankingText = await page.locator("section:has-text('City ranking')").first().innerText();
@@ -155,9 +172,22 @@ try {
 }
 
 // 4. Add a source -----------------------------------------------------------
+// There is no built-in sample any more, so this pastes real text and depends on
+// the model answering. Without one, the whole section skips rather than
+// reporting a failure the reader can't act on.
 try {
   await page.goto(`${BASE}/add-source`, { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: "Load Telangana sample" }).click();
+  await page.fill("#src-title", "Telangana mulls GCC policy");
+  await page.fill("#src-pub", "The Hindu");
+  await page.fill("#src-date", "2025");
+  await page.selectOption("#src-type", "news");
+  await page.fill(
+    "#src-text",
+    "Telangana, home to Hyderabad's fast-growing GCC cluster, does not yet have a dedicated " +
+      "policy offering fiscal incentives to global capability centres. State officials said a " +
+      "GCC policy is being considered. For now, companies setting up in the state rely on the " +
+      "existing single-window approval system rather than GCC-specific subsidies.",
+  );
   await page.getByRole("button", { name: "Extract facts" }).click();
   await page.waitForSelector("text=Quote found verbatim", { timeout: 150000 });
   const rowsText = await page.locator("main").innerText();
@@ -176,11 +206,12 @@ try {
   await page.waitForTimeout(300);
   await page.screenshot({ path: `${SHOTS}/05_add_source_export.png` });
 } catch (e) {
-  console.log(`SKIP  add-source step failed: ${e.message.split("\n")[0]}`);
+  console.log(`SKIP  add-source step needs a working model: ${e.message.split("\n")[0]}`);
 }
 
 // 5. Plan export ------------------------------------------------------------
 await page.goto(`${BASE}/navigator`, { waitUntil: "networkidle" });
+await fillNavigator(page);
 await page.getByRole("button", { name: "Build my shortlist" }).click();
 await page.waitForSelector("section:has-text('City ranking')");
 await page.getByRole("button", { name: "Save & export plan" }).click();

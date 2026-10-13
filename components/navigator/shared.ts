@@ -7,13 +7,17 @@ export const FUNCTIONS: { key: FunctionKeyT; label: string }[] = [
   { key: "analytics", label: "Analytics" },
 ];
 
-export const DEMO_PERSONA: NavigatorInputs = {
+/**
+ * The form starts blank. Every figure is something the reader supplies, so a
+ * filled-in result can't be mistaken for one the tool assumed.
+ */
+export const EMPTY_INPUTS: NavigatorInputs = {
   hq_country: "US",
-  company_size: 400,
+  company_size: 0,
   global2000: false,
-  seats_y1: 40,
-  seats_y3: 120,
-  functions: ["eng", "ops"],
+  seats_y1: 0,
+  seats_y3: 0,
+  functions: [],
   priority: "cost",
   open_to_tier2: false,
   investment_inr_cr: null,
@@ -38,12 +42,17 @@ export const COMPONENT_COLOURS: Record<string, string> = {
 
 export function validate(inputs: NavigatorInputs): Record<string, string | null> {
   const errors: Record<string, string | null> = {};
-  if (!Number.isFinite(inputs.company_size) || inputs.company_size < 10 || inputs.company_size > 1_000_000)
+  // An empty field is asked for; a filled one is range-checked. "Between 10 and
+  // 1,000,000" against a blank box reads as a rule rather than a request.
+  if (!Number.isFinite(inputs.company_size) || inputs.company_size <= 0)
+    errors.company_size = "Enter your company size.";
+  else if (inputs.company_size < 10 || inputs.company_size > 1_000_000)
     errors.company_size = "Between 10 and 1,000,000 employees.";
-  if (!Number.isFinite(inputs.seats_y1) || inputs.seats_y1 < 1 || inputs.seats_y1 > 2_000)
-    errors.seats_y1 = "Between 1 and 2,000 seats.";
-  if (!Number.isFinite(inputs.seats_y3) || inputs.seats_y3 < 1)
-    errors.seats_y3 = "At least 1 seat.";
+  if (!Number.isFinite(inputs.seats_y1) || inputs.seats_y1 <= 0)
+    errors.seats_y1 = "Enter seats for year 1.";
+  else if (inputs.seats_y1 > 2_000) errors.seats_y1 = "Between 1 and 2,000 seats.";
+  if (!Number.isFinite(inputs.seats_y3) || inputs.seats_y3 <= 0)
+    errors.seats_y3 = "Enter seats for year 3.";
   else if (inputs.seats_y3 < inputs.seats_y1)
     errors.seats_y3 = "Year 3 seats can't be below year 1 seats.";
   if (inputs.functions.length === 0) errors.functions = "Pick at least one function.";

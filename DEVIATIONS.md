@@ -31,8 +31,8 @@ honest; none of them changes a number the pack specified.
    unchanged, and the tests cover it.
 4. **Extraction "as of" default.** When the model returns `as_of: null`, the review row is
    pre-filled with the source's own publication date and labelled "(the source's publication
-   date — edit if the fact is about another period)". Without this the demo's Telangana
-   sample couldn't be approved, since the sample text has no date in it.
+   date — edit if the fact is about another period)". Without this, a policy page that states
+   a term without dating it produces an unapprovable row.
 5. **Plan links recompute rather than snapshot.** The pack asks for a URL-encoded plan and a
    sources list. I encode inputs + weights (lz-string, base64url — plain
    `compressToEncodedURIComponent` contains `+`/`$`, which broke Next.js route params) and
@@ -60,21 +60,27 @@ honest; none of them changes a number the pack specified.
 - **Seed regeneration tool.** `build_seed.py` was part of the pack; it is not in
   this repo (it was lost in a file move during scaffolding). `reference/scripts/validate_seed.py`
   and `reference/scripts/reference_scoring.py` are present verbatim, and the seed JSON is
-  intact.
+  intact. Both read `data/seed/` — the repo carries one copy of the seed, not one per consumer.
+- **No demo persona or built-in sample.** The pack specifies a "Load demo company" link and a
+  "Load Telangana sample" button. Both were removed: they hardcoded a company profile and a
+  paraphrased article into the product, and a filled-in form can be mistaken for a result the
+  tool derived. The navigator form now starts blank, and extraction runs only on text the
+  reader supplies. The consequence is stated on the page and in the README — when the model is
+  unavailable, "Add a source" reports it instead of falling back to canned rows.
 - **Screenshots** are taken at 1440x900 from the production deployment via
   `scripts/smoke.mjs` (Playwright), saved to `screenshots/` and committed.
 
 ## Quota note
 
 The public deployment uses a Gemini API key on the free tier (20 requests/day per model,
-shared per project). The demo script spends four model calls (one "why they differ" note,
-one Ask answer, one extraction), so a cold incognito run works — the five screenshots in
-`screenshots/` were captured from production with all three AI features working.
+shared per project). A full pass spends three model calls (one "why they differ" note, one Ask
+answer, one extraction), so a cold incognito run works — the screenshots in `screenshots/` were
+captured from production with all three AI features working.
 
 The free-tier quota is the deployment's weakest link. When it runs out mid-session the app
 degrades honestly: the truth table still renders the full data, the note box says the table
 above is the data, Ask shows "Busy, try again in a minute." with a retry (429 + `Retry-After`),
-and Add a source falls back to the pre-validated Telangana sample rather than failing. Nothing
-else stops. Once the daily quota resets (about 12:30 PM IST), all three features answer again.
-For a deployment with a paid key, change `LLM_MODEL`/`LLM_FALLBACK_MODELS` in the Vercel
-project settings — no code change needed.
+and "Add a source" reports that the model is unavailable rather than returning anything. Only
+the three AI features stop; everything else is computed from the seed. Once the daily quota
+resets (about 12:30 PM IST), all three answer again. For a deployment with a paid key, change
+`LLM_MODEL`/`LLM_FALLBACK_MODELS` in the Vercel project settings — no code change needed.

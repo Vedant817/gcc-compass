@@ -57,7 +57,7 @@ and Bengaluru climbs from 31.8 to 50.9. The weights, the formula and the assumpt
 (A1-A5 on the cost estimate) are all on screen.
 
 The scoring, eligibility and cost logic is a TypeScript port of `reference/scripts/reference_scoring.py`,
-and the unit tests reproduce `seed/expected_demo_output.json`: Pune 77.2, Hyderabad 57.2,
+and the unit tests reproduce `data/seed/expected_demo_output.json`: Pune 77.2, Hyderabad 57.2,
 Bengaluru 31.8 on Lowest cost; Pune's 3-year total ≈ ₹44.69 Cr.
 
 ## Where AI is used, and how it's constrained
@@ -84,7 +84,7 @@ TypeScript in `lib/`.
 npm install
 cp .env.example .env.local     # add your LLM keys (optional; AI features say "AI is off" without them)
 npm run dev                    # http://localhost:3000
-npm test                       # 107 unit tests: scoring, eligibility, cost, grounding, seed, extraction, plan context
+npm test                       # 104 unit tests: scoring, eligibility, cost, grounding, seed, extraction, plan context
 python3 reference/scripts/validate_seed.py   # seed validator from the pack
 ```
 
@@ -92,8 +92,7 @@ Verification scripts (all take `BASE_URL`, defaulting to `http://localhost:3100`
 
 ```bash
 npm run build && PORT=3100 npm run start &     # or: npm run dev
-BASE_URL=http://localhost:3100 node scripts/smoke.mjs            # 30-check demo run; writes screenshots/
-BASE_URL=http://localhost:3100 node scripts/shot-addsource.mjs   # retry helper for the add-source screenshot
+BASE_URL=http://localhost:3100 node scripts/smoke.mjs            # 29-check demo run; writes screenshots/
 BASE_URL=<url> node scripts/mobile-check.mjs                     # no 390px overflow on all five pages
 ```
 
@@ -163,8 +162,8 @@ components/     UI primitives (restyled, no default theme) + feature components
 lib/            registry, scoring, eligibility, cost, llm, prompts, grounding, plan, overlay
 data/seed/      the registry seed (sources, facts, cities, states, policies, providers)
 tests/          vitest: scoring vs expected_demo_output.json, eligibility, grounding, seed
-scripts/        smoke.mjs (demo script + screenshots), shot-addsource.mjs, mobile-check.mjs
-reference/      the pack's reference implementation (scoring, seed validator) and its seed JSON
+scripts/        smoke.mjs (demo script + screenshots), mobile-check.mjs
+reference/      the pack's reference implementation (scoring, seed validator), reading data/seed/
 pack/           the build pack this was made from (spec, design guide) — context, not shipped code
 screenshots/    the five deck screenshots (1440×900) and the plan export
 ```

@@ -5,8 +5,6 @@ import {
   isUsableQualitativeValue,
   shapeExtractedFacts,
 } from "../lib/extraction";
-import { CACHED_EXTRACTIONS } from "../lib/cachedExtractions";
-import { TELANGANA_SAMPLE } from "../components/add-source/addSourceShared";
 import type { ExtractedFactT } from "../lib/types";
 
 function fact(over: Partial<ExtractedFactT> = {}): ExtractedFactT {
@@ -109,27 +107,5 @@ describe("dedupe", () => {
     expect(shaped.facts).toHaveLength(2);
     expect(shaped.droppedUnusable).toBe(1);
     expect(shaped.deduped).toBe(0);
-  });
-});
-
-describe("the cached extraction still satisfies the same rules", () => {
-  const entry = CACHED_EXTRACTIONS[0];
-  const norm = TELANGANA_SAMPLE.text.replace(/\s+/g, " ").trim();
-
-  it("keeps every row reviewable under the shipped filter", () => {
-    for (const f of entry.result.facts) {
-      expect(isReviewableFact(f), f.metric).toBe(true);
-    }
-  });
-
-  it("has no duplicate entity+metric", () => {
-    const keys = entry.result.facts.map((f) => `${f.entity_id}|${f.metric}`);
-    expect(new Set(keys).size).toBe(keys.length);
-  });
-
-  it("states its values as phrases rather than quote slices", () => {
-    for (const f of entry.result.facts) {
-      if (f.value_text) expect(norm.includes(f.value_text), f.value_text).toBe(false);
-    }
   });
 });

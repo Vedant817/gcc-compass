@@ -7,7 +7,20 @@ import {
   type SizeClassBand,
 } from "../lib/planContext";
 import { seedRegistry } from "../lib/registry";
-import { DEMO_PERSONA } from "../components/navigator/shared";
+import type { NavigatorInputs } from "../lib/types";
+
+/** A mid-sized entrant, sized to sit in the middle of every band below. */
+const PLAN_INPUTS: NavigatorInputs = {
+  hq_country: "US",
+  company_size: 400,
+  global2000: false,
+  seats_y1: 40,
+  seats_y3: 120,
+  functions: ["eng", "ops"],
+  priority: "cost",
+  open_to_tier2: false,
+  investment_inr_cr: null,
+};
 
 const BANDS: SizeClassBand[] = [
   { class: "Mega", min_seats: 500, min_investment_inr_cr: 300 },
@@ -27,7 +40,7 @@ describe("size class", () => {
     expect(policy).toBeDefined();
     expect(readSizeClassBands(policy!)).toEqual([]);
 
-    const answer = sizeClassForPlan(seedRegistry.policies, DEMO_PERSONA);
+    const answer = sizeClassForPlan(seedRegistry.policies, PLAN_INPUTS);
     expect(answer?.policyId).toBe("pol_mh_2025");
     expect(answer?.className).toBeNull();
     expect(answer?.gap).toBeTruthy();
@@ -36,7 +49,7 @@ describe("size class", () => {
   });
 
   it("puts the registry's own wording in front of the model", () => {
-    const ctx = planContextForAsk(seedRegistry.policies, DEMO_PERSONA);
+    const ctx = planContextForAsk(seedRegistry.policies, PLAN_INPUTS);
     expect(ctx).toContain("not determinable");
     expect(ctx).toContain("pol_mh_2025");
     // it must not offer a cap to fall back on
@@ -51,17 +64,17 @@ describe("size class", () => {
   });
 
   it("classifies on seats and investment, taking the highest band met", () => {
-    const plan = { ...DEMO_PERSONA, seats_y3: 120, investment_inr_cr: 40 };
+    const plan = { ...PLAN_INPUTS, seats_y3: 120, investment_inr_cr: 40 };
     // 120 seats clears Medium (75) and Medium's 30 Cr, but not Large's 200 seats
     expect(classifySizeClass(BANDS, plan)).toBe("Medium");
   });
 
   it("needs both sides of a band when both are named", () => {
     // 600 seats reaches Mega's seat count but not its ₹300 Cr investment bar
-    expect(classifySizeClass(BANDS, { ...DEMO_PERSONA, seats_y3: 600, investment_inr_cr: 150 })).toBe(
+    expect(classifySizeClass(BANDS, { ...PLAN_INPUTS, seats_y3: 600, investment_inr_cr: 150 })).toBe(
       "Large",
     );
-    expect(classifySizeClass(BANDS, { ...DEMO_PERSONA, seats_y3: 600, investment_inr_cr: 400 })).toBe(
+    expect(classifySizeClass(BANDS, { ...PLAN_INPUTS, seats_y3: 600, investment_inr_cr: 400 })).toBe(
       "Mega",
     );
   });
@@ -69,19 +82,19 @@ describe("size class", () => {
   it("treats a missing investment as not reaching a band that names one", () => {
     // every band here names an investment floor, so an unstated investment
     // confirms none of them, even at 600 seats
-    expect(classifySizeClass(BANDS, { ...DEMO_PERSONA, seats_y3: 600, investment_inr_cr: null })).toBeNull();
+    expect(classifySizeClass(BANDS, { ...PLAN_INPUTS, seats_y3: 600, investment_inr_cr: null })).toBeNull();
     // a band that names only seats is still reachable
     expect(
       classifySizeClass(
         [{ class: "Small", min_seats: 20, min_investment_inr_cr: null }],
-        { ...DEMO_PERSONA, seats_y3: 600, investment_inr_cr: null },
+        { ...PLAN_INPUTS, seats_y3: 600, investment_inr_cr: null },
       ),
     ).toBe("Small");
   });
 
   it("ignores bands that name no threshold", () => {
     expect(
-      classifySizeClass([{ class: "Enterprise", min_seats: null, min_investment_inr_cr: null }], DEMO_PERSONA),
+      classifySizeClass([{ class: "Enterprise", min_seats: null, min_investment_inr_cr: null }], PLAN_INPUTS),
     ).toBeNull();
   });
 
@@ -91,7 +104,7 @@ describe("size class", () => {
       size_class_thresholds: BANDS,
     };
     const withBands = seedRegistry.policies.map((p) => (p.id === "pol_mh_2025" ? policy : p));
-    const ctx = planContextForAsk(withBands, { ...DEMO_PERSONA, seats_y3: 600, investment_inr_cr: 400 });
+    const ctx = planContextForAsk(withBands, { ...PLAN_INPUTS, seats_y3: 600, investment_inr_cr: 400 });
     expect(ctx).toContain("Maharashtra size class for this plan: Mega");
     expect(ctx).toContain("year-3 seats 600");
     expect(ctx).toContain("investment ₹400 Cr");

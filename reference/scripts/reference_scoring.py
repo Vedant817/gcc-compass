@@ -1,6 +1,6 @@
 """Reference implementation of 04_scoring_and_rules.md. The app's TS port must reproduce these numbers."""
 import json, os
-D=os.path.join(os.path.dirname(__file__),"..","seed")
+D=os.path.join(os.path.dirname(__file__),"..","..","data","seed")
 L=lambda n: json.load(open(os.path.join(D,n+".json"),encoding="utf-8"))
 facts,cities,states,pols=L("facts"),L("cities"),L("states"),L("policies")
 SQFT_PER_SEAT=150  # assumption A1

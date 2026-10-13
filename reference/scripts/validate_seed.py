@@ -1,6 +1,6 @@
 """Validates seed JSON + referential integrity. Exit 1 on any error."""
 import json, os, sys
-D=os.path.join(os.path.dirname(__file__),"..","seed")
+D=os.path.join(os.path.dirname(__file__),"..","..","data","seed")
 L=lambda n: json.load(open(os.path.join(D,n+".json"),encoding="utf-8"))
 src,facts,cities,states,pol,prov=[L(n) for n in ["sources","facts","cities","states","policies","providers"]]
 E=[]
