@@ -59,11 +59,15 @@ export function EligibilityCards({
       title="Incentive eligibility"
       aside={<span className="text-xs text-muted">Rules evaluated against your inputs; nothing is assumed</span>}
     >
-      <div className="grid md:grid-cols-2 gap-4 items-stretch">
+      {/* Cards in a row share a height so the grid reads as a grid. A state with no
+          policy terms has nothing to fill that height with, so it is allowed to
+          stay short: a 60px card beside a 460px one looked like a broken panel
+          rather than an honest "there is no policy here". */}
+      <div className="grid md:grid-cols-2 gap-4 items-start">
         {cards.map(({ stateId, state, evaluated, cityId }) => (
           <article
             key={stateId}
-            className="border border-rule rounded bg-white p-3 flex flex-col"
+            className="border border-rule rounded bg-white p-3 flex flex-col self-start"
           >
             <header className="flex items-baseline justify-between gap-2 mb-2">
               <h4 className="text-[15px] font-medium">
