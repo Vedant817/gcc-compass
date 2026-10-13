@@ -199,8 +199,9 @@ function PolicyCard({
         </tbody>
       </table>
       {policy.unverified_parts.length > 0 && (
-        <p className="text-xs text-status-needscheck mb-1">
-          Parts not confirmed in the registry: {policy.unverified_parts.join("; ")}.
+        <p className="text-xs text-muted mb-1">
+          Not yet confirmed by the policy text:{" "}
+          {policy.unverified_parts.join("; ").toLowerCase()}.
         </p>
       )}
       {src && (

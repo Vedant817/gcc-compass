@@ -9,7 +9,7 @@ import { Field, Select, TextArea, TextInput } from "@/components/ui/field";
 import { CitationChip } from "@/components/CitationChip";
 import type { ExtractedT } from "@/lib/types";
 import { factValue } from "@/lib/format";
-import { ALLOWED_ENTITY_IDS } from "./addSourceShared";
+import { ALLOWED_ENTITY_IDS, entityLabel, metricLabel, metricDefinition } from "./addSourceShared";
 
 export interface ApprovedFactInput {
   entity_type: "country" | "city" | "state" | "provider";
@@ -86,10 +86,10 @@ export function ExtractionReview({
         return (
           <Card key={r.index} className="p-3">
             <div className="flex flex-wrap items-center gap-2 mb-2">
-              <span className="font-mono text-[11px] border border-rule bg-white px-1.5 py-0.5">
-                {r.entity_type}:{r.entity_id ?? r.entity_name ?? "?"}
+              <span className="text-[12px] font-medium border border-rule bg-white px-1.5 py-0.5">
+                {entityLabel(r.entity_type, r.entity_id, r.entity_name)}
               </span>
-              <span className="font-mono text-[11px] text-slate">{r.metric}</span>
+              <span className="text-[12px] text-slate">{metricLabel(r.metric)}</span>
               {r.new_metric && <Badge>new metric</Badge>}
               <ConfidenceBadge level={r.suggested_confidence} />
               <span className="ml-auto flex gap-2">
@@ -217,7 +217,7 @@ export function ExtractionReview({
                 </div>
                 <div className="md:col-span-2">
                   <dt className="text-muted inline">Definition: </dt>
-                  <dd className="inline">{r.definition_note ?? "—"}</dd>
+                  <dd className="inline">{r.definition_note ?? metricDefinition(r.metric)}</dd>
                 </div>
                 {r.as_of_defaulted && (
                   <div className="md:col-span-2">

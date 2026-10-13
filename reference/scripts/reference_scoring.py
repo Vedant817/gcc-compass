@@ -12,9 +12,10 @@ MIN_COVERAGE=0.60
 def fact(eid,metric,src=None):
     xs=[f for f in facts if f["entity_id"]==eid and f["metric"]==metric and f["value_num"] is not None and (src is None or f["source_id"]==src)]
     return xs[0] if xs else None
+FIELD_LABELS={"hq_country":"HQ country","company_size":"company size","global2000":"whether you're a Global 2000 company","seats_y1":"year-1 seats","seats_y3":"year-3 seats","functions":"functions","open_to_tier2":"whether you're open to Tier-2 cities","investment_inr_cr":"planned India investment","city_id":"city"}
 def eval_rule(r,inp):
     v=inp.get(r["field"])
-    if v is None: return "needs_check",f"Need your {r['field']} to check: {r['fail_reason']}"
+    if v is None: return "needs_check",f"We'd need your {FIELD_LABELS.get(r['field'],r['field'].replace('_',' '))} to check this: {r['fail_reason']}"
     op,t=r["op"],r["value"]
     ok={"==":lambda:v==t,"!=":lambda:v!=t,">=":lambda:v>=t,"<=":lambda:v<=t,"in":lambda:v in t,"not_in":lambda:v not in t}[op]()
     return ("eligible",None) if ok else ("not_eligible",r["fail_reason"])

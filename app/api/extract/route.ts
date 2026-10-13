@@ -27,7 +27,12 @@ const Body = z.object({
 
 const hits = new Map<string, { count: number; reset: number }>();
 const MAX_TRACKED_IPS = 500;
-const EXTRACT_LIMIT = 5; // per minute
+/**
+ * 10/min. Extraction is the most expensive call in the app (a full document in,
+ * structured facts out) and the demo only needs one, so this leaves room to retry
+ * a bad paste without letting one client work the route.
+ */
+const EXTRACT_LIMIT = 10; // per minute
 
 function rateLimited(ip: string): boolean {
   const now = Date.now();

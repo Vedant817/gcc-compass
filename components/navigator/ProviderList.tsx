@@ -28,7 +28,7 @@ export function ProviderList({
     { category: "real_estate", why: "Leasing in the shortlisted city." },
   ];
   if (inputs.functions.includes("eng"))
-    reasons.push({ category: "recruiting", why: "Engineering hiring was selected." });
+    reasons.push({ category: "recruiting", why: "Hiring for your engineering team." });
   if (inputs.seats_y1 < 25)
     reasons.push({
       category: "eor",

@@ -6,6 +6,9 @@ import { fileURLToPath } from "node:url";
  * that use it (e.g. components/add-source/addSourceShared.ts).
  */
 export default defineConfig({
+  // match Next's automatic JSX runtime so tests can render components that
+  // don't import React explicitly
+  esbuild: { jsx: "automatic" },
   resolve: {
     alias: {
       "@": fileURLToPath(new URL(".", import.meta.url)),

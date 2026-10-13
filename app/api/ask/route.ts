@@ -23,6 +23,15 @@ const Body = z.object({
 /** Per-IP in-memory rate limit (best effort on serverless: per warm instance). */
 const MAX_TRACKED_IPS = 500;
 const RETRY_AFTER_S = "60";
+
+/**
+ * Generous on purpose. This limit exists to stop one client looping the route, not
+ * to ration a reader: at 20/min a two-minute demo could still trip it on a shared
+ * office IP, and on a free-tier model key the scarce resource is upstream anyway.
+ * The model client already cools off a model after a 429, which is the limit that
+ * actually protects the quota.
+ */
+const ASKS_PER_MINUTE = 60;
 const hits = new Map<string, { count: number; reset: number }>();
 
 function rateLimited(ip: string): boolean {
@@ -37,7 +46,7 @@ function rateLimited(ip: string): boolean {
     return false;
   }
   rec.count += 1;
-  return rec.count > 20;
+  return rec.count > ASKS_PER_MINUTE;
 }
 
 /** Rate-limited by the model service: a 429 the browser can act on. */

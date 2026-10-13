@@ -555,7 +555,7 @@ function WhyNote({ factIds }: { factIds: string[] }) {
             {note.cited_ids.length === 0 ? "Only one source; nothing to reconcile." : renderInline(note.note)}
           </p>
           <p className="text-xs text-muted mt-1">
-            Written by the model from the definition, date and source type fields only.{" "}
+            Written from the dates and definitions above, not from outside sources.{" "}
             <button className="text-slate underline" onClick={load}>
               Regenerate
             </button>

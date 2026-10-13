@@ -26,7 +26,7 @@ describe("rules engine", () => {
     const r = evaluateRule(up.eligibility_json.all[0], { ...persona, investment_inr_cr: null });
     expect(r.status).toBe("needs_check");
     expect(r.reason).toBe(
-      "Need your investment_inr_cr to check: UP policy requires minimum FDI of ₹50 Cr.",
+      "We'd need your planned India investment to check this: UP policy requires minimum FDI of ₹50 Cr.",
     );
   });
 

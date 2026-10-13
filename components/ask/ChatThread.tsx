@@ -46,6 +46,7 @@ export function ChatThread() {
   const [busy, setBusy] = useState(false);
   const [plan, setPlan] = useState<NavigatorInputs | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setPlan(readStoredPlan()?.inputs ?? null);
@@ -114,7 +115,14 @@ export function ChatThread() {
               <li key={s}>
                 <button
                   className="text-sm text-slate border border-rule rounded bg-white px-2.5 py-1 hover:border-slate-light"
-                  onClick={() => ask(s)}
+                  onClick={() => {
+                    // Fill the box rather than sending. The reader may want to
+                    // edit or drop the suggestion, and on a free-tier key a demo
+                    // should not spend a scarce answer on a click they didn't
+                    // mean as final.
+                    setQuestion(s);
+                    inputRef.current?.focus();
+                  }}
                   disabled={busy}
                 >
                   {s}
@@ -175,6 +183,7 @@ export function ChatThread() {
           </label>
           <input
             id="ask-input"
+            ref={inputRef}
             className="h-9"
             placeholder="Ask the registry…"
             value={question}
@@ -221,13 +230,10 @@ function AnswerBody({ text }: { text: string }) {
 }
 
 function CitationFooter({ citations }: { citations: Citation[] }) {
-  const facts = citations.filter((c) => c.kind === "fact").length;
-  const policies = citations.filter((c) => c.kind === "policy").length;
   return (
     <div className="mt-2 border-t border-rule pt-2">
       <p className="text-xs text-muted mb-1">
-        Answered from {facts} fact{facts === 1 ? "" : "s"} and {policies} polic
-        {policies === 1 ? "y" : "ies"}.
+        Answered from {citations.length} sourced claim{citations.length === 1 ? "" : "s"}.
       </p>
       <ul className="flex flex-col gap-1">
         {citations.map((c) => (

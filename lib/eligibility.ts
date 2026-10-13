@@ -15,10 +15,32 @@ export type RuleInputs = Record<string, unknown>;
  * Rules engine from 04 §5. Inputs are the navigator inputs plus city_id.
  * A missing input is "needs check", never a silent pass or fail.
  */
+/**
+ * The plan fields a rule can ask about, named the way a person filling in the
+ * navigator form would name them. A missing input is "needs check" and has to be
+ * asked for in those words: the raw key (investment_inr_cr) is our naming, not
+ * something the user ever typed.
+ */
+const FIELD_LABELS: Record<string, string> = {
+  hq_country: "HQ country",
+  company_size: "company size",
+  global2000: "whether you're a Global 2000 company",
+  seats_y1: "year-1 seats",
+  seats_y3: "year-3 seats",
+  functions: "functions",
+  open_to_tier2: "whether you're open to Tier-2 cities",
+  investment_inr_cr: "planned India investment",
+  city_id: "city",
+};
+
 export function evaluateRule(rule: Rule, inputs: RuleInputs): { status: EligibilityStatus; reason?: string } {
   const v = inputs[rule.field];
   if (v === undefined || v === null) {
-    return { status: "needs_check", reason: `Need your ${rule.field} to check: ${rule.fail_reason}` };
+    const label = FIELD_LABELS[rule.field] ?? rule.field.replace(/_/g, " ");
+    return {
+      status: "needs_check",
+      reason: `We'd need your ${label} to check this: ${rule.fail_reason}`,
+    };
   }
   const t = rule.value as RuleValue;
   let ok: boolean;

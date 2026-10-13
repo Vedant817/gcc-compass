@@ -75,8 +75,10 @@ function FormulaNote({
     <div className="mt-3 border-t border-rule pt-3 text-sm">
       <h4 className="text-[13px] font-medium text-slate mb-1">Formula and assumptions</h4>
       <p className="font-mono text-[12px] bg-paper border border-rule rounded px-2 py-1 mb-2">
-        rent_y = seats_y × {SQFT_PER_SEAT} sq ft × rent ₹/sq ft/month × 12 · salary_y = seats_y ×
-        CTC × {inc === null ? "(1 + increment)^" : `(1 + ${(inc / 100).toFixed(3)})^`}(y−1)
+        Rent × seats = seats × {SQFT_PER_SEAT} sq ft × rent ₹/sq ft/month × 12 months
+        {" · "}
+        Salary × seats = seats × CTC ×
+        {inc === null ? "(1 + annual increase)^" : `(1 + ${(inc / 100).toFixed(3)})^`}(years−1)
       </p>
       <ul className="space-y-0.5 text-[13px]">
         {COST_ASSUMPTIONS.map((a) => (
