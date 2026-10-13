@@ -253,24 +253,29 @@ export default function AddSourceView() {
 
       <div>
         {rows ? (
-          <div className="flex flex-col gap-3">
-            {cachedResult && (
-              <p className="text-sm border border-rule bg-paper text-slate rounded px-3 py-2">
-                <span className="font-mono text-[11px] border border-rule bg-white px-1.5 py-0.5 mr-2">
-                  cached result
-                </span>
-                The model couldn&apos;t extract this time, so these are the pre-validated facts
-                for the built-in Telangana sample. Review them as usual — nothing enters the
-                registry without your Approve.
-              </p>
-            )}
-            <ExtractionReview
-              facts={rows}
-              warnings={warnings}
-              pastedText={text}
-              onApprove={approve}
-            />
-          </div>
+          // The heading stays once rows arrive. It used to swap out for the rows
+          // themselves, so the moment extraction succeeded the page lost the one
+          // label that told you what you were looking at.
+          <Card title="Review">
+            <div className="flex flex-col gap-3">
+              {cachedResult && (
+                <p className="text-sm border border-rule bg-paper text-slate rounded px-3 py-2">
+                  <span className="font-mono text-[11px] border border-rule bg-white px-1.5 py-0.5 mr-2">
+                    cached result
+                  </span>
+                  The model couldn&apos;t extract this time, so these are the pre-validated facts
+                  for the built-in Telangana sample. Review them as usual — nothing enters the
+                  registry without your Approve.
+                </p>
+              )}
+              <ExtractionReview
+                facts={rows}
+                warnings={warnings}
+                pastedText={text}
+                onApprove={approve}
+              />
+            </div>
+          </Card>
         ) : (
           <Card title="Review">
             <p className="text-sm text-muted">

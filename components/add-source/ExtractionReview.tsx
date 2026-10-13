@@ -91,8 +91,8 @@ export function ExtractionReview({
               </span>
               <span className="text-[12px] text-slate">{metricLabel(r.metric)}</span>
               {r.new_metric && (
-                <Badge title="A field this registry doesn't carry yet. Approving it adds a new one.">
-                  New field
+                <Badge title="The source measures something this registry doesn't carry yet. Approving it adds a new field.">
+                  New metric suggested
                 </Badge>
               )}
               <ConfidenceBadge level={r.suggested_confidence} />

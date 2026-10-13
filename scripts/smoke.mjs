@@ -126,6 +126,34 @@ try {
   console.log(`SKIP  ask step failed: ${e.message.split("\n")[0]}`);
 }
 
+// A retry replaces the exchange it repeats rather than stacking another copy.
+// This is checked on whichever reply comes back - an answer or a Busy notice -
+// because stacking is most visible when the model is refusing, which is exactly
+// when the reader is most likely to click Retry twice.
+try {
+  await page.goto(`${BASE}/ask`, { waitUntil: "networkidle" });
+  await page.locator("#ask-input").fill("What would Maharashtra pay me?");
+  await page.getByRole("button", { name: "Ask", exact: true }).click();
+  const thread = page.locator("main div.flex.flex-col.gap-3").last();
+  // settle: either a Retry button (the reply failed) or an answer body
+  await thread.locator("button", { hasText: "Retry" }).or(thread.locator("p.text-ink")).first().waitFor({ timeout: 120000 });
+  const exchangeCount = async () => thread.locator("div").evaluateAll((els) => els.length);
+  const afterFirst = await exchangeCount();
+  const retry = thread.locator("button", { hasText: "Retry" });
+  if (await retry.count()) {
+    for (let i = 0; i < 2; i++) {
+      await retry.first().click();
+      await page.waitForTimeout(2500);
+      await thread.locator("button", { hasText: "Retry" }).or(thread.locator("p.text-ink")).first().waitFor({ timeout: 120000 });
+    }
+  }
+  const afterRetries = await exchangeCount();
+  check("ask retry replaces instead of stacking", afterRetries === afterFirst, `${afterFirst} message(s) -> ${afterRetries}`);
+  check("one question on screen after 2 retries", (await page.getByText("What would Maharashtra pay me?").count()) === 1);
+} catch (e) {
+  check("ask retry replaces instead of stacking", false, e.message.split("\n")[0]);
+}
+
 // 4. Add a source -----------------------------------------------------------
 try {
   await page.goto(`${BASE}/add-source`, { waitUntil: "networkidle" });

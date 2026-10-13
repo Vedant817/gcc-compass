@@ -205,8 +205,10 @@ function PolicyCard({
       </table>
       {policy.unverified_parts.length > 0 && (
         <p className="text-xs text-muted mb-1">
-          Not yet confirmed by the policy text:{" "}
-          {policy.unverified_parts.join("; ").toLowerCase()}.
+          {policy.unverified_parts
+            .map((part) => `${part} not confirmed in the policy text`)
+            .join("; ")}
+          .
         </p>
       )}
       {src && (

@@ -15,7 +15,7 @@ import {
 import { RegistryView } from "@/lib/registry";
 import { readOverlay } from "@/lib/overlay";
 import type { Fact } from "@/lib/types";
-import { ConfidenceBadge, SiteLinkFlag, UnverifiedBadge } from "@/components/ui/badge";
+import { ConfidenceBadge, UnverifiedBadge } from "@/components/ui/badge";
 import { renderInline } from "@/lib/markdown";
 import { Card, EmptyState, SkeletonRows, Table, Td, Th, Tr } from "@/components/ui/table";
 import { factValue, inrNum } from "@/lib/format";
@@ -350,6 +350,11 @@ export function TruthView({ presets }: { presets: TruthPreset[] }) {
                           target="_blank"
                           rel="noreferrer"
                           className="text-slate underline"
+                          title={
+                            src.url_precision === "domain_only"
+                              ? "Research recorded the publisher's site rather than the exact page, so the link opens their site."
+                              : undefined
+                          }
                         >
                           {sourceLabel(src, f.source_id)}
                         </a>
@@ -357,7 +362,11 @@ export function TruthView({ presets }: { presets: TruthPreset[] }) {
                         f.source_id
                       )}
                     </Td>
-                    <Td className="whitespace-nowrap">{factValue(f)}</Td>
+                    {/* The unit travels with the value. A published range reads
+                        "1,800-1,900" on its own, which is the one row in this
+                        table that looked like it was missing something the
+                        others had. */}
+                    <Td className="whitespace-nowrap">{withUnit(factValue(f), f.unit)}</Td>
                     <Td className="whitespace-nowrap">{f.as_of}</Td>
                     <DefinitionCell note={f.definition_note} />
                     <Td>
@@ -366,10 +375,7 @@ export function TruthView({ presets }: { presets: TruthPreset[] }) {
                     <Td>
                       <span className="flex flex-wrap gap-1">
                         {f.unverified && <UnverifiedBadge />}
-                        {src?.url_precision === "domain_only" && <SiteLinkFlag />}
-                        {!f.unverified && src?.url_precision !== "domain_only" && (
-                          <span className="text-muted">—</span>
-                        )}
+                        {!f.unverified && <span className="text-muted">—</span>}
                       </span>
                     </Td>
                   </Tr>
