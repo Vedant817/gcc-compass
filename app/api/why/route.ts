@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { registry } from "@/lib/registry";
-import { chatJson, llmConfigured } from "@/lib/llm";
+import { chatJson, llmConfigured, LLMError } from "@/lib/llm";
 import { buildWhySystem } from "@/lib/prompts";
 import { checkGrounded } from "@/lib/grounding";
 
@@ -79,12 +79,16 @@ export async function POST(req: Request) {
           : "Your previous note contained a number that is not in the facts above. Remove it or cite the fact it comes from.",
       );
     } catch (e) {
-      const msg = (e as Error).message;
-      console.error("[why] llm failure:", msg);
-      return NextResponse.json(
-        { error: msg.includes("rate-limited") ? msg : "Couldn't write the note.", rateLimited: msg.includes("rate-limited") },
-        { status: 502 },
-      );
+      console.error("[why] llm failure:", (e as Error).message);
+      // the model service being unavailable is a 429 the reader can act on, the
+      // same as Ask: a 502 would read as a broken app rather than a busy one
+      if (e instanceof LLMError && e.transient) {
+        return NextResponse.json(
+          { error: "Busy, try again in a minute." },
+          { status: 429, headers: { "Retry-After": "60" } },
+        );
+      }
+      return NextResponse.json({ error: "Couldn't write the note." }, { status: 502 });
     }
     const res = NoteSchema.safeParse(parsed);
     if (!res.success) continue;

@@ -128,7 +128,9 @@ try {
   await page.getByRole("button", { name: "Extract facts" }).click();
   await page.waitForSelector("text=Quote found verbatim", { timeout: 150000 });
   const rowsText = await page.locator("main").innerText();
-  check("extraction found TS fact", /gcc_policy_status/.test(rowsText) && /TS/.test(rowsText));
+  // the review row is labelled for a person ("Telangana", "GCC policy status"),
+  // not with the registry's own ids
+  check("extraction found TS fact", /GCC policy status/.test(rowsText) && /Telangana/.test(rowsText));
   await page.getByRole("button", { name: "Approve" }).first().click();
   await page.waitForSelector("text=AI-extracted · human-approved", { timeout: 15000 });
   check("approve toast renders", await page.locator('[role="status"]').count() > 0);
