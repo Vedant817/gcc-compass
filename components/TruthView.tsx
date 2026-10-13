@@ -117,8 +117,8 @@ export function TruthView({ presets }: { presets: TruthPreset[] }) {
           key: f.id,
           label: `${sourceLabel(src, f.source_id)} · ${f.as_of}`,
           value_num: f.value_num,
-          valueLabel: factValue(f),
-          shortLabel: f.value_text ?? inrNum(f.value_num as number),
+          valueLabel: withUnit(factValue(f), f.unit),
+          shortLabel: withUnit(f.value_text ?? inrNum(f.value_num as number), f.unit),
           rangeMax: rangeMaxOf(f),
           shade: spec.shade,
           fact: f,
@@ -470,6 +470,16 @@ function niceMax(v: number): number {
   const step = norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 5 ? 5 : 10;
   return step * mag;
 }
+/**
+ * A range published as text ("1,800-1,900") carries its unit in the unit field, so
+ * it was the only bar on the chart reading as a bare number while every other bar
+ * ended in "GCCs". This gives the text-published ones the same treatment.
+ */
+function withUnit(text: string, unit: string | null): string {
+  if (!unit) return text;
+  return text.toLowerCase().includes(unit.toLowerCase()) ? text : `${text} ${unit}`;
+}
+
 function rangeMaxOf(f: Fact): number | null {
   if (!f.value_text) return null;
   const nums = f.value_text.match(/\d[\d,]*(?:\.\d+)?/g);

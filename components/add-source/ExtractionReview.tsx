@@ -90,7 +90,11 @@ export function ExtractionReview({
                 {entityLabel(r.entity_type, r.entity_id, r.entity_name)}
               </span>
               <span className="text-[12px] text-slate">{metricLabel(r.metric)}</span>
-              {r.new_metric && <Badge>new metric</Badge>}
+              {r.new_metric && (
+                <Badge title="A field this registry doesn't carry yet. Approving it adds a new one.">
+                  New field
+                </Badge>
+              )}
               <ConfidenceBadge level={r.suggested_confidence} />
               <span className="ml-auto flex gap-2">
                 <Button

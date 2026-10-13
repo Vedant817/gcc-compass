@@ -27,7 +27,7 @@
     "name": "Inductus",
     "category": "setup_bot",
     "cities": [],
-    "notes": "GCC setup and advisory. Add website as source before launch.",
+    "notes": "GCC setup and advisory.",
     "source_id": null,
     "is_flexiple": false
   },
@@ -45,7 +45,7 @@
     "name": "Draup",
     "category": "advisory",
     "cities": [],
-    "notes": "Paid intelligence; GCC opportunity analysis aimed at vendors. Add website as source before launch.",
+    "notes": "Paid intelligence; GCC opportunity analysis aimed at vendors.",
     "source_id": null,
     "is_flexiple": false
   },

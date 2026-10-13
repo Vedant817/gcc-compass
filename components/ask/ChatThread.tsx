@@ -56,11 +56,18 @@ export function ChatThread() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const ask = async (q: string) => {
+  const ask = async (q: string, opts: { replace?: number } = {}) => {
     const text = q.trim();
     if (!text || busy) return;
-    setMessages((m) => [...m, { role: "user", text }]);
     setBusy(true);
+    if (opts.replace !== undefined) {
+      // A retry replaces the question and the failed reply already on screen.
+      // Appending instead left one Busy message per attempt stacked down the
+      // thread, so three retries read as three separate failures.
+      setMessages((m) => [...m.slice(0, opts.replace), { role: "user", text }]);
+    } else {
+      setMessages((m) => [...m, { role: "user", text }]);
+    }
     setMessages((m) => [...m, { role: "assistant", loading: true }]);
     try {
       const res = await fetch("/api/ask", {
@@ -97,9 +104,16 @@ export function ChatThread() {
     }
   };
 
+  /** Retry the last exchange in place, dropping the question and reply it replaces. */
   const retryLast = () => {
-    const lastUser = [...messages].reverse().find((m) => m.role === "user");
-    if (lastUser?.text) ask(lastUser.text);
+    let at = -1;
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === "user") {
+        at = i;
+        break;
+      }
+    }
+    if (at >= 0) ask(messages[at].text ?? "", { replace: at });
   };
 
   return (

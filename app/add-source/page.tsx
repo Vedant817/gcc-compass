@@ -68,8 +68,10 @@ export default function AddSourceView() {
     // the sample text on its own; the "paraphrased" caption belongs to the UI,
     // not to the text that gets sent for extraction
     setText(TELANGANA_SAMPLE.text);
-    setRows(null);
     setError(null);
+    // Clicking the sample while its rows are already on screen must not wipe them:
+    // loading the same sample twice is a no-op for the review, and re-extracting
+    // only happens if the reader asks for it.
     setSampleLoaded(true);
   };
 
