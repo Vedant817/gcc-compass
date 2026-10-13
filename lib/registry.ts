@@ -73,20 +73,50 @@ export class RegistryView {
     public providers: Provider[],
   ) {}
 
-  /** Merge AI-approved overlay facts/sources (localStorage on the client, request body on the server). */
-  static load(overlay: Overlay = { sources: [], facts: [] }): RegistryView {
+  /**
+   * Merge the three layers, in increasing order of authority:
+   *
+   *   seed  the curated registry, bundled at build time
+   *   live  facts fetched from a public API at request time
+   *   overlay  facts a person approved in this browser
+   *
+   * Order matters twice over. Later rows land later in the array, and
+   * `numericFact` returns the *first* match, so appending keeps a live row from
+   * silently displacing a curated figure that the scoring model is verified
+   * against. Live data is additive context; it never moves a published number.
+   * A human-approved fact still wins over both, so it goes last.
+   */
+  static load(
+    overlay: Overlay = { sources: [], facts: [] },
+    live: Overlay = { sources: [], facts: [] },
+  ): RegistryView {
     const overlaySources = overlay.sources ?? [];
     const overlayFacts = overlay.facts ?? [];
-    const sourceIds = new Set(overlaySources.map((s) => s.id));
+    const liveSources = live.sources ?? [];
+    const liveFacts = live.facts ?? [];
+    const hasValue = (f: Fact) => f.value_num !== null || f.value_text !== null;
+    // Each layer masks the ones beneath it. Seeding the exclusion set from every
+    // layer keeps a later row from being shadowed by an earlier one carrying the
+    // same id, which is how an approved fact ends up duplicated instead of
+    // replacing what it supersedes.
+    const overlayFactIds = new Set(overlayFacts.map((f) => f.id));
+    const overlaySourceIds = new Set(overlaySources.map((s) => s.id));
+
+    const sourceIds = new Set([
+      ...overlaySourceIds,
+      ...liveSources.map((s) => s.id),
+    ]);
     const sources = [
       ...seedRegistry.sources.filter((s) => !sourceIds.has(s.id)),
+      ...liveSources.filter((s) => !overlaySourceIds.has(s.id)),
       ...overlaySources,
     ];
-    const factIds = new Set(overlayFacts.map((f) => f.id));
-    // an approved fact with an existing id replaces it; others are appended
+    const factIds = new Set([...overlayFactIds, ...liveFacts.map((f) => f.id)]);
+    // a row with an existing id replaces it; others are appended
     const merged = [
       ...seedRegistry.facts.filter((f) => !factIds.has(f.id)),
-      ...overlayFacts.filter((f) => f.value_num !== null || f.value_text !== null),
+      ...liveFacts.filter((f) => !overlayFactIds.has(f.id)).filter(hasValue),
+      ...overlayFacts.filter(hasValue),
     ];
     return new RegistryView(
       sources,

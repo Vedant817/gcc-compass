@@ -78,13 +78,43 @@ Three places, all server-side through one OpenAI-compatible client (`lib/llm.ts`
 AI is never in the score, the eligibility rules or the cost formula. Those are plain
 TypeScript in `lib/`.
 
+## Where public data is used, and how it's constrained
+
+One place, and not the AI: four indicators fetched at page load from the World Bank Open
+Data (`lib/live.ts`) — GDP per capita for India and the five HQ countries the navigator can
+produce, and for India its purchasing-power-parity figure, population and GDP growth. Rows
+that came from there carry a "live API" badge. Six rules:
+
+1. **Free and no key.** A public API, so there is no credential to hold and none to leak.
+2. **CC BY 4.0.** The World Bank's licence, credited wherever a live row appears — the same
+   rule the seed follows.
+3. **Additive only.** Live rows are appended to the registry *after* the seed, and
+   `numericFact` returns the first match, so a live figure can never displace a curated one.
+   No score, ranking or cost estimate reads one.
+4. **Never throws.** Each indicator is fetched and settled independently, so a dead endpoint
+   costs its own rows and nothing else. If the API is unreachable the app shows no live rows
+   and carries on.
+5. **Never claims to have been read.** Every live row is Low confidence and Unverified,
+   because nobody here has read it. A machine-fetched figure that never says so would be the
+   one dishonest row in a registry built to disagree out loud.
+6. **Cached.** Revalidated every six hours, so a page view isn't an outbound API call.
+
+The registry therefore has three layers in increasing order of authority: seed, live, and the
+facts you approved in this browser. A human-approved fact wins over both. The merge order and
+the honesty invariants are the tested part (`tests/live.test.ts`, 11 tests: the seed survives
+untouched, a live row cannot displace a curated one, every curated score component still
+reads what it read before, and each live row marks itself unreviewed). The licence, the
+never-throws behaviour and the six-hour cache are properties of the code and of the API, not
+assertions.
+
 ## Running it locally
 
 ```bash
 npm install
 cp .env.example .env.local     # add your LLM keys (optional; AI features say "AI is off" without them)
 npm run dev                    # http://localhost:3000
-npm test                       # 104 unit tests: scoring, eligibility, cost, grounding, seed, extraction, plan context
+npm test                       # 127 unit tests: scoring, eligibility, cost, grounding, seed, extraction, plan context, live layer
+LIVE_TESTS=1 npm test          # adds the 3 live tests that make a real request to the World Bank API
 python3 reference/scripts/validate_seed.py   # seed validator from the pack
 ```
 
@@ -117,8 +147,10 @@ plan pages are pure client/server TypeScript.
 Deployed on Vercel (Node runtime, `maxDuration = 30` on the LLM routes). There is no
 database: the seed is imported at build time into a typed in-memory registry, AI-approved
 facts live in the browser's localStorage as an overlay, and a plan is encoded in its URL
-(`lz-string` + base64url), so a shared link reopens the same plan anywhere. Leads POST to
-`/api/leads` and are logged server-side; no email is sent.
+(`lz-string` + base64url), so a shared link reopens the same plan anywhere. The live layer
+is the one thing fetched at request time rather than bundled, and it is cached for six
+hours rather than stored. Leads POST to `/api/leads` and are logged server-side; no email
+is sent.
 
 Both fonts are vendored in `app/fonts/` and loaded with `next/font/local`, so the build
 never fetches Google Fonts at build time — a build-time network hiccup there fails the
@@ -127,6 +159,11 @@ installs don't download browsers the app never uses at runtime.
 
 ## Known limitations
 
+- **Live data doesn't reach everything.** The World Bank layer is merged on the Truth table
+  and the navigator's market context only. Ask, the saved plan link and the shortlist are
+  built from the seed plus your overlay, so a GDP figure you can see in the truth table
+  won't appear as a citation there. Deliberate: it keeps plans reproducible from their URL
+  without a network call, but it means the two views can disagree about which rows exist.
 - **Seed size.** 70 facts is enough to demo the shape of the problem, not to answer
   everything. The "why they differ" note is cached per metric+fact set in memory, which a
   serverless deployment re-warms per instance.
@@ -159,9 +196,9 @@ installs don't download browsers the app never uses at runtime.
 ```
 app/            pages (truth, navigator, ask, add-source, plan, method) and API routes
 components/     UI primitives (restyled, no default theme) + feature components
-lib/            registry, scoring, eligibility, cost, llm, prompts, grounding, plan, overlay
+lib/            registry, scoring, eligibility, cost, llm, prompts, grounding, plan, overlay, live (World Bank)
 data/seed/      the registry seed (sources, facts, cities, states, policies, providers)
-tests/          vitest: scoring vs expected_demo_output.json, eligibility, grounding, seed
+tests/          vitest: scoring vs expected_demo_output.json, eligibility, grounding, seed, live layer
 scripts/        smoke.mjs (demo script + screenshots), mobile-check.mjs
 reference/      the pack's reference implementation (scoring, seed validator), reading data/seed/
 pack/           the build pack this was made from (spec, design guide) — context, not shipped code

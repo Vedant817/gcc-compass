@@ -45,6 +45,48 @@ honest; none of them changes a number the pack specified.
 7. **Neutrality detail.** Flexiple's provider row is tagged "Our service" and sorted
    alphabetically within its category (so ANSR precedes Flexiple in setup). The score never
    touches provider data.
+8. **Live public data layer (`lib/live.ts`), added rather than substituted.** The pack specifies a
+   fully hardcoded seed. I added a World Bank Open Data layer next to it: four indicators fetched
+   at request time (GDP per capita for India and the five HQ countries, plus India's PPP figure,
+   population and GDP growth), cached six hours, never throwing. It is additive context, not a
+   replacement, and the reason is provenance. The seed's value is that a person read each figure,
+   it carries a quote, a source and a confidence level, and competing figures are kept as separate
+   rows rather than reconciled — a JSON API has none of that. So live rows land after the seed and
+   `numericFact` returns the first match, which means a live figure can never displace a curated
+   one; no score, ranking or cost estimate depends on one. Every live row is Low confidence and
+   Unverified, badged "live API" in the UI, and no attribution-free copy of it is rendered: the
+   source row carries World Bank Open Data, CC BY 4.0. Parsing, merging and the honesty invariants
+  are covered by `tests/live.test.ts` (11) and `tests/liveApi.test.ts` (12); the tests that make a
+  real request are opt-in behind `LIVE_TESTS=1`, so a default `npm test` run exercises the parsing
+  and merge rules without the network. I did not re-run the network set from this environment.
+
+## Investigated and deliberately not integrated
+
+These were tried during the live layer work and rejected. Recording why, because the
+reason each one failed is the reason it would fail again.
+
+- **Indian state-level per-capita income.** This is the number a reader most wants for a
+  site-selection decision, and there is no free, no-key, officially-licensed source for it.
+  Verified three ways: the World Bank `/subnational` endpoint does not exist, none of the Indian
+  states appear in the 296-entry country list, and the subnational sources cover India only as a
+  whole. MoSPI has no machine-readable API (the site is a JS app behind hostnames that no longer
+  resolve). The RBI handbook tables are behind JavaScript and bot protection. data.gov.in
+  requires a registered API key, which means shipping someone else's credential to a public
+  deployment. Not integrated: it would have meant a key, a scrape, or a number with no stated
+  provenance — the last being exactly what this registry exists to avoid.
+- **City population via OpenStreetMap Overpass.** Rejected on both reliability and coverage. The
+  endpoint allows a hard cap of 4 concurrent slots, and light query batches failed roughly half
+  the time. Population tags are absent for 7 of the 8 Indian metros checked; the one hit was a
+  2011 census figure attached to the wrong administrative unit. A source that is often down and
+  usually empty is not worth the request.
+- **City population via the GeoNames bulk dump.** This one works, and is CC BY 4.0 like the
+  World Bank. It is a 3.2 MB zip file rather than an API, though, so fetching it per request would
+  be wasteful. Not integrated now; noted as a possible future enrichment run at build time, where
+  the file is read once and the result lands in the seed — which would also give it the seed's
+  provenance rather than leaving it as live rows.
+- **India unemployment (SL.UEM.TOTL.ZS).** Tried, then dropped. From this deployment it timed out
+  more often than it answered, and a metric that is sometimes absent is worse than one that is
+  honestly missing. The four indicators that shipped are the ones that answered.
 
 ## Unfinished / smaller items
 
@@ -54,7 +96,8 @@ honest; none of them changes a number the pack specified.
   is unverified. `node scripts/mobile-check.mjs` verifies the 390 px layout on the deployed
   URL.
 - **Method page** is a short single page (`/method`) rather than a modal; it covers
-  confidence, the score, the cost assumptions, where AI is constrained and neutrality.
+  confidence, where live data comes from, the score, the cost assumptions, where AI is
+  constrained and neutrality.
 - **Staleness badges** (rent > 180 days, counts > 365) are not implemented — the "nice-to-have"
   list in 03.
 - **Seed regeneration tool.** `build_seed.py` was part of the pack; it is not in

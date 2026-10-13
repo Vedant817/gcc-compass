@@ -61,6 +61,36 @@ export default function MethodPage() {
           </p>
         </Card>
 
+        <Card title="Where live data comes from">
+          <p className="text-sm mb-2">
+            Some rows are fetched at page load from the World Bank Open Data rather than read from
+            a person — GDP per capita for India and the five HQ countries the navigator can
+            produce, and for India its purchasing-power-parity figure, population and GDP growth.
+            They carry a “live API” badge wherever they appear.
+          </p>
+          <ul className="text-sm space-y-2">
+            <li>
+              <span className="font-medium">Unreviewed, and marked that way.</span> Every live row
+              is Low confidence and Unverified because nobody has read it. The World Bank is
+              authoritative for its own statistics; this page is not claiming to have checked the
+              row.
+            </li>
+            <li>
+              <span className="font-medium">Context, not input.</span> Live rows are appended to
+              the registry after the seed, and a lookup returns the first match, so a live figure
+              can never displace a curated one. No score, ranking or cost estimate reads one.
+            </li>
+            <li>
+              <span className="font-medium">It cannot break the page.</span> If the API is
+              unreachable the app shows no live rows and carries on. The curated facts, the score
+              and the cost estimate are unchanged.
+            </li>
+          </ul>
+          <p className="text-xs text-muted mt-2">
+            Data: World Bank Open Data, CC BY 4.0. Cached for six hours.
+          </p>
+        </Card>
+
         <Card title="The city score">
           <p className="text-sm mb-2">
             Five components — talent share, Grade A rent, estimated mid-level SWE CTC, attrition and

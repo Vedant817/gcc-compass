@@ -102,6 +102,23 @@ const firstRow = await page.locator("section:has-text('City ranking') tbody tr")
 check("rank 1 is Pune", /Pune/.test(firstRow), firstRow.replace(/\n/g, " "));
 const flexRow = await page.locator("section:has-text('Who to call')").innerText();
 check("Flexiple tagged Our service, alphabetically after ANSR", /Our service/.test(flexRow) && flexRow.indexOf("ANSR") < flexRow.indexOf("Flexiple"));
+
+// The live World Bank layer. Two things matter here, and only one of them needs
+// the API: the card must never imply it has data when it does not. Both states
+// are checked, so a total outage still fails the run rather than passing it.
+const market = page.locator("section", { hasText: "Market context" }).first();
+check("market context card is present", (await market.count()) > 0);
+const marketText = (await market.count()) ? await market.innerText() : "";
+const marketLive = /live API/.test(marketText);
+check(
+  "market context shows World Bank figures or says plainly it cannot",
+  marketLive
+    ? /GDP per capita/.test(marketText) && /World Bank/.test(marketText) && /20\d\d/.test(marketText)
+    : /unavailable right now/.test(marketText),
+  marketLive ? "live figures shown" : "degraded",
+);
+if (marketLive) check("live rows are badged, not passed off as curated", /live API/.test(marketText));
+
 await page.locator("section:has-text('City ranking')").first().scrollIntoViewIfNeeded();
 await page.waitForTimeout(300);
 await page.screenshot({ path: `${SHOTS}/02_setup_wizard.png` });

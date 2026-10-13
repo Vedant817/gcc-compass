@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { RegistryView } from "@/lib/registry";
 import { readOverlay } from "@/lib/overlay";
 import { rank, PRESET_WEIGHTS, normaliseWeights, type RankedCity } from "@/lib/scoring";
+import type { LiveLayer } from "@/lib/live";
 import type { NavigatorInputs, Weights } from "@/lib/types";
 import { Card, Disclosure, Table, Td, Th, Tr } from "@/components/ui/table";
 import { StatusPill, UnverifiedBadge } from "@/components/ui/badge";
@@ -14,6 +15,7 @@ import { COMPONENT_COLOURS, COMPONENT_LABELS } from "./shared";
 import { COMPONENTS } from "@/lib/scoring";
 import { EligibilityCards } from "./EligibilityCards";
 import { CostTable } from "./CostTable";
+import { MarketContext } from "./MarketContext";
 import { ProviderList } from "./ProviderList";
 
 const PRESET_LABELS: Record<string, string> = {
@@ -33,17 +35,20 @@ const MISSING_LABELS: Record<string, string> = {
 export function NavigatorResults({
   inputs,
   weights,
+  live,
   onWeightsChange,
   onPreset,
   onSave,
 }: {
   inputs: NavigatorInputs;
   weights: Weights;
+  /** Server-fetched context rows. Appended to the registry, never ranked on. */
+  live: LiveLayer;
   onWeightsChange: (w: Weights) => void;
   onPreset: (p: NavigatorInputs["priority"]) => void;
   onSave: () => void;
 }) {
-  const reg = useMemo(() => RegistryView.load(readOverlay()), []);
+  const reg = useMemo(() => RegistryView.load(readOverlay(), live), [live]);
   const ranked = useMemo(() => rank(reg, inputs, weights), [reg, inputs, weights]);
   const rankedCities = ranked.filter((r) => r.score !== null);
   const unranked = ranked.filter((r) => r.score === null);
@@ -165,6 +170,8 @@ export function NavigatorResults({
       <EligibilityCards reg={reg} inputs={inputs} ranked={ranked} />
 
       <CostTable reg={reg} inputs={inputs} cities={top3} />
+
+      <MarketContext reg={reg} inputs={inputs} />
 
       <ProviderList reg={reg} inputs={inputs} />
 

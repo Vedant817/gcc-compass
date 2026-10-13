@@ -15,7 +15,8 @@ import {
 import { RegistryView } from "@/lib/registry";
 import { readOverlay } from "@/lib/overlay";
 import type { Fact } from "@/lib/types";
-import { ConfidenceBadge, UnverifiedBadge } from "@/components/ui/badge";
+import { countryName, type LiveLayer } from "@/lib/live";
+import { ConfidenceBadge, LiveFetchBadge, UnverifiedBadge } from "@/components/ui/badge";
 import { renderInline } from "@/lib/markdown";
 import { Card, EmptyState, SkeletonRows, Table, Td, Th, Tr } from "@/components/ui/table";
 import { factValue, inrNum } from "@/lib/format";
@@ -38,6 +39,12 @@ export interface TruthPreset {
   toggleCentres?: boolean;
   /** every entity with the metric, not just India (used by the /truth?metric= deep link) */
   allEntities?: boolean;
+  /**
+   * Put the entity in the row label. Metrics spanning several countries would
+   * otherwise label every bar with the same publisher and date, which tells the
+   * reader nothing about which bar is which.
+   */
+  labelEntity?: boolean;
 }
 
 const CITY_CHOICES = ["bengaluru", "hyderabad", "pune", "chennai"];
@@ -53,8 +60,8 @@ interface BarDatum {
   fact: Fact;
 }
 
-export function TruthView({ presets }: { presets: TruthPreset[] }) {
-  const reg = useMemo(() => RegistryView.load(readOverlay()), []);
+export function TruthView({ presets, live }: { presets: TruthPreset[]; live: LiveLayer }) {
+  const reg = useMemo(() => RegistryView.load(readOverlay(), live), [live]);
   const [presetId, setPresetId] = useState(presets[0]?.id ?? "");
   const preset = presets.find((p) => p.id === presetId) ?? presets[0];
   const [city, setCity] = useState(preset?.defaultCity ?? CITY_CHOICES[0]);
@@ -113,9 +120,10 @@ export function TruthView({ presets }: { presets: TruthPreset[] }) {
       for (const f of facts) {
         if (f.value_num === null) continue; // qualitative facts stay in the table only
         const src = reg.source(f.source_id);
+        const who = preset.labelEntity ? `${entityDisplay(reg, f)} · ` : "";
         out.push({
           key: f.id,
-          label: `${sourceLabel(src, f.source_id)} · ${f.as_of}`,
+          label: `${who}${sourceLabel(src, f.source_id)} · ${f.as_of}`,
           value_num: f.value_num,
           valueLabel: withUnit(factValue(f), f.unit),
           shortLabel: withUnit(f.value_text ?? inrNum(f.value_num as number), f.unit),
@@ -344,6 +352,9 @@ export function TruthView({ presets }: { presets: TruthPreset[] }) {
                 return (
                   <Tr key={f.id}>
                     <Td>
+                      {preset?.labelEntity && (
+                        <span className="block font-medium">{entityDisplay(reg, f)}</span>
+                      )}
                       {src ? (
                         <a
                           href={src.url}
@@ -375,7 +386,10 @@ export function TruthView({ presets }: { presets: TruthPreset[] }) {
                     <Td>
                       <span className="flex flex-wrap gap-1">
                         {f.unverified && <UnverifiedBadge />}
-                        {!f.unverified && <span className="text-muted">—</span>}
+                        {f.extracted_by === "api" && <LiveFetchBadge />}
+                        {!f.unverified && f.extracted_by !== "api" && (
+                          <span className="text-muted">—</span>
+                        )}
                       </span>
                     </Td>
                   </Tr>
@@ -440,6 +454,15 @@ function sourceLabel(src: { id: string; publisher: string } | undefined, fallbac
   if (!src) return fallbackId;
   if (src.id === "src_flexiple_brief") return "Flexiple brief";
   return src.publisher;
+}
+
+/** A readable name for whatever entity a fact is about. */
+function entityDisplay(reg: RegistryView, f: Fact): string {
+  if (f.entity_type === "city") return reg.cityName(f.entity_id);
+  if (f.entity_type === "state") {
+    return reg.states.find((s) => s.id === f.entity_id)?.name ?? f.entity_id;
+  }
+  return countryName(f.entity_id);
 }
 
 /**

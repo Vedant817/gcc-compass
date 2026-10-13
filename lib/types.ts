@@ -9,6 +9,7 @@ export const SourceType = z.enum([
   "broker_report",
   "news",
   "vendor_blog",
+  "api",
 ]);
 export const UrlPrecision = z.enum(["exact", "domain_only"]);
 
@@ -38,7 +39,7 @@ export const FactSchema = z.object({
   source_id: z.string(),
   confidence: Confidence,
   verified_by_human: z.boolean(),
-  extracted_by: z.enum(["ai", "human"]),
+  extracted_by: z.enum(["ai", "human", "api"]),
   unverified: z.boolean().default(false),
   quote: z.string().nullable().default(null),
 });

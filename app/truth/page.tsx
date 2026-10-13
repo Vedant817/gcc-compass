@@ -1,5 +1,6 @@
 import { TruthView, type TruthPreset } from "@/components/TruthView";
 import { RENT_SOURCE_ID } from "@/lib/registry";
+import { getLiveLayer } from "@/lib/live";
 
 export const metadata = {
   title: "Truth table · GCC Compass",
@@ -49,6 +50,15 @@ const PRESETS: TruthPreset[] = [
     intro: "Zinnov's FY2025 share of India GCC talent by city, with the talent pool each share stands on.",
     oneBarPerCity: { metric: "gcc_talent_share_pct" },
   },
+  {
+    id: "macro",
+    label: "Market context (live API)",
+    intro:
+      "Not GCC data. These are World Bank indicators fetched when this page loads, so there is only one publisher and nothing to disagree about. Nobody here has read them: they are context, and no score on this site depends on them.",
+    bars: [{ metric: "gdp_per_capita_usd", shade: "primary" }],
+    allEntities: true,
+    labelEntity: true,
+  },
 ];
 
 /** /truth?metric=gcc_policy_status deep links to a metric added by a reviewer. */
@@ -63,7 +73,10 @@ function presetForMetric(metric: string): TruthPreset | null {
   };
 }
 
-export default function TruthPage({ searchParams }: { searchParams?: { metric?: string } }) {
+export default async function TruthPage({ searchParams }: { searchParams?: { metric?: string } }) {
+  // Live rows are appended to the registry, never allowed to replace a curated
+  // one, and a failed fetch leaves the page exactly as it was before this call.
+  const live = await getLiveLayer();
   const deepLink = searchParams?.metric ? presetForMetric(searchParams.metric) : null;
   const presets = deepLink ? [deepLink, ...PRESETS] : PRESETS;
   return (
@@ -73,7 +86,7 @@ export default function TruthPage({ searchParams }: { searchParams?: { metric?: 
         Every published answer to one question, side by side. Each row keeps its source, date,
         definition and confidence; where sources disagree, they stay apart.
       </p>
-      <TruthView presets={presets} />
+      <TruthView presets={presets} live={live} />
     </>
   );
 }

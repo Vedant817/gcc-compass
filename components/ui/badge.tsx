@@ -56,6 +56,22 @@ export function AiExtractedBadge() {
   );
 }
 
+/**
+ * Marks a row that came from a public API rather than the curated registry.
+ * It sits beside the Unverified badge rather than replacing it: the figure is
+ * machine-fetched and unreviewed, and the reader should see both facts.
+ */
+export function LiveFetchBadge() {
+  return (
+    <span
+      title="Fetched from a public API at page load, not read and checked by a person. Shown for context; it does not feed the score."
+      className="inline-block px-1.5 py-0.5 text-[11px] leading-4 border border-slate-light text-slate bg-white whitespace-nowrap"
+    >
+      live API
+    </span>
+  );
+}
+
 export function OurServiceBadge() {
   return (
     <span className="inline-block px-1.5 py-0.5 text-[11px] leading-4 border border-ink bg-sand text-ink whitespace-nowrap">
