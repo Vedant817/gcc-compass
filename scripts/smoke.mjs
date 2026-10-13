@@ -42,7 +42,12 @@ await page.waitForTimeout(2500); // why-they-differ note
 const note = await page.locator("section:has-text('Why they differ') p").first().textContent();
 check(
   "why-they-differ note rendered",
-  (note || "").length > 40 && !/^Couldn't write/.test(note || ""),
+  // The box also renders a "couldn't write" and a "busy" message; both are honest
+  // fallbacks, but neither is the note, so neither may pass as one.
+  (note || "").length > 40 &&
+    !/^Couldn't write/.test(note || "") &&
+    !/waiting on the model, which is busy/.test(note || "") &&
+    !/^AI is off/.test(note || ""),
   (note || "").slice(0, 90),
 );
 const barTicks = await page.locator(".recharts-cartesian-axis-tick-value").allTextContents();
