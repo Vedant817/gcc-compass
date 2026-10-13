@@ -34,7 +34,7 @@
         "pct": 40,
         "cap_inr_cr": 50,
         "duration_yrs": null,
-        "conditions": "R&D grants 40% up to ₹50 Cr [UNVERIFIED cap wording]"
+        "conditions": "R&D grants 40% up to ₹50 Cr"
       },
       {
         "type": "payroll",
@@ -119,7 +119,7 @@
         "pct": 30,
         "cap_inr_cr": null,
         "duration_yrs": null,
-        "conditions": "20% infra / 30% IT per search synthesis [UNVERIFIED]"
+        "conditions": "20% for infrastructure, 30% for IT"
       },
       {
         "type": "opex",

@@ -115,7 +115,7 @@ export function TruthView({ presets }: { presets: TruthPreset[] }) {
         const src = reg.source(f.source_id);
         out.push({
           key: f.id,
-          label: `${src?.publisher ?? f.source_id} · ${f.as_of}`,
+          label: `${sourceLabel(src, f.source_id)} · ${f.as_of}`,
           value_num: f.value_num,
           valueLabel: factValue(f),
           shortLabel: f.value_text ?? inrNum(f.value_num as number),
@@ -171,9 +171,15 @@ export function TruthView({ presets }: { presets: TruthPreset[] }) {
   // narrow charts get a compact label set: shorter category and value labels,
   // and a smaller right margin, so nothing wraps or collides
   const compact = chartWidth < 700;
+  // Ranges carry a whisker past the bar, and their labels start past that, so
+  // they need more room on the right than a plain figure does.
+  const hasRange = bars.some((b) => b.rangeMax !== null && b.rangeMax > b.value_num);
   const chartMargin = compact
-    ? { top: 4, right: 84, bottom: 24, left: 4 }
-    : { top: 4, right: 132, bottom: 24, left: 8 };
+    ? { top: 4, right: hasRange ? 108 : 84, bottom: 24, left: 4 }
+    : { top: 4, right: hasRange ? 168 : 150, bottom: 24, left: 8 };
+  // One label height of clearance between rows: the longest bars finish at
+  // almost the same x, so pitch decides whether their labels touch.
+  const rowPitch = compact ? 40 : 42;
 
   return (
     <div className="flex flex-col gap-5">
@@ -246,7 +252,7 @@ export function TruthView({ presets }: { presets: TruthPreset[] }) {
         )
       ) : (
         <Card className="py-4">
-          <div ref={chartRef} style={{ height: bars.length * 30 + 48 }} className="overflow-x-auto">
+          <div ref={chartRef} style={{ height: bars.length * rowPitch + 48 }} className="overflow-x-auto">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 layout="vertical"
@@ -296,9 +302,9 @@ export function TruthView({ presets }: { presets: TruthPreset[] }) {
                   ))}
                   <LabelList
                     dataKey={compact ? "shortLabel" : "valueLabel"}
-                    position="right"
-                    fill="#304359"
-                    fontSize={12}
+                    content={(props: unknown) => (
+                      <ValueLabel {...(props as ValueLabelProps)} bars={bars} />
+                    )}
                   />
                 </Bar>
               </BarChart>
@@ -345,7 +351,7 @@ export function TruthView({ presets }: { presets: TruthPreset[] }) {
                           rel="noreferrer"
                           className="text-slate underline"
                         >
-                          {src.publisher}
+                          {sourceLabel(src, f.source_id)}
                         </a>
                       ) : (
                         f.source_id
@@ -353,7 +359,7 @@ export function TruthView({ presets }: { presets: TruthPreset[] }) {
                     </Td>
                     <Td className="whitespace-nowrap">{factValue(f)}</Td>
                     <Td className="whitespace-nowrap">{f.as_of}</Td>
-                    <Td className="text-muted">{f.definition_note ?? "—"}</Td>
+                    <DefinitionCell note={f.definition_note} />
                     <Td>
                       <ConfidenceBadge level={f.confidence} />
                     </Td>
@@ -374,6 +380,84 @@ export function TruthView({ presets }: { presets: TruthPreset[] }) {
         )}
       </Card>
     </div>
+  );
+}
+
+interface ValueLabelProps {
+  /** the bar's own rect, as recharts resolved it */
+  viewBox?: { x: number; y: number; width: number; height: number };
+  value?: string;
+  /** position of this bar in the chart's data, used to find its range */
+  index?: number;
+  bars: BarDatum[];
+}
+
+/**
+ * Draws the value label past the end of the published figure.
+ *
+ * A point estimate ends at the bar, but a range keeps a whisker running from the
+ * midpoint to the top of the range, so the label starts past the whisker. Without
+ * that, the line runs straight through the "1,800-1,900" text. The x used here is
+ * the bar's own pixel width scaled by rangeMax/value_num, which is exactly where
+ * BarShape puts the whisker's end, so the two can never disagree.
+ */
+function ValueLabel({ viewBox, value, index = 0, bars }: ValueLabelProps) {
+  const text = value == null ? "" : String(value);
+  const bar = bars[index];
+  if (!viewBox || !text || !bar) return null;
+  const barEnd = viewBox.x + viewBox.width;
+  const pastWhisker =
+    bar.rangeMax !== null && bar.value_num > 0
+      ? viewBox.x + (viewBox.width * bar.rangeMax) / bar.value_num
+      : barEnd;
+  return (
+    <text
+      x={pastWhisker + 8}
+      y={viewBox.y + viewBox.height / 2}
+      dy="0.35em"
+      fill="#304359"
+      fontSize={12}
+    >
+      {text}
+    </text>
+  );
+}
+
+/**
+ * How a source is named in the table and the chart.
+ *
+ * Almost always the publisher, but the assignment brief is a client document
+ * rather than a market source: showing it as "Flexiple" next to nasscom and EY
+ * reads as a peer estimate, which it isn't.
+ */
+function sourceLabel(src: { id: string; publisher: string } | undefined, fallbackId: string): string {
+  if (!src) return fallbackId;
+  if (src.id === "src_flexiple_brief") return "Flexiple brief";
+  return src.publisher;
+}
+
+/**
+ * The definition column is the noisiest cell in the table — a methodology note
+ * per row — so it starts closed and opens in place. Every fact still keeps its
+ * definition available, just not competing with the values.
+ */
+function DefinitionCell({ note }: { note: string | null }) {
+  if (!note) {
+    return (
+      <Td className="text-muted align-top">
+        <span className="text-muted">—</span>
+      </Td>
+    );
+  }
+  return (
+    <Td className="align-top">
+      <details className="text-[13px]">
+        <summary className="cursor-pointer text-slate underline decoration-dotted select-none">
+          show
+        </summary>
+        <span className="mt-1 block text-muted">{note}</span>
+      </details>
+    </Td>
   );
 }
 

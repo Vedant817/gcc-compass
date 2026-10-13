@@ -6,7 +6,7 @@ import { readOverlay } from "@/lib/overlay";
 import { rank, PRESET_WEIGHTS, normaliseWeights, type RankedCity } from "@/lib/scoring";
 import type { NavigatorInputs, Weights } from "@/lib/types";
 import { Card, Disclosure, Table, Td, Th, Tr } from "@/components/ui/table";
-import { StatusPill } from "@/components/ui/badge";
+import { StatusPill, UnverifiedBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { inrNum, score as fmtScore } from "@/lib/format";
@@ -86,10 +86,30 @@ export function NavigatorResults({
             </tbody>
           </Table>
         )}
-        <p className="text-xs text-muted mt-2">
-          Score parts: a bar per city, split by component contribution (weight × normalised value).
-          Missing components are not counted and not imputed.
-        </p>
+        <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2 mt-2">
+          <ul className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
+            {COMPONENTS.map((k) => (
+              <li key={k} className="flex items-center gap-1.5">
+                <span
+                  aria-hidden="true"
+                  className="inline-block h-2.5 w-3.5 border border-rule"
+                  style={{ background: COMPONENT_COLOURS[k] }}
+                />
+                {COMPONENT_LABELS[k]}
+              </li>
+            ))}
+          </ul>
+          <p className="text-xs text-muted">
+            Score parts: a bar per city, split by component contribution (weight × normalised
+            value). Missing components are not counted and not imputed.
+          </p>
+        </div>
+        {tier2Note(reg, inputs) && (
+          <div className="text-sm border border-rule bg-paper rounded px-3 py-2 mt-3">
+            <p className="text-ink">Tier-2 cities are on, but none of them are ranked.</p>
+            <p className="text-muted">{tier2Note(reg, inputs)}</p>
+          </div>
+        )}
         {unranked.length > 0 && (
           <div className="mt-3 border-t border-rule pt-3">
             <h4 className="text-[13px] font-medium text-slate mb-1">Not enough data to rank</h4>
@@ -205,7 +225,10 @@ function RankRow({
         {status.status ? (
           <StatusPill status={status.status} />
         ) : (
-          <span className="text-muted text-xs">{status.label}</span>
+          <span className="flex flex-wrap items-center gap-1.5">
+            <span className="text-muted text-xs">{status.label}</span>
+            {status.unverified && <UnverifiedBadge />}
+          </span>
         )}
       </Td>
     </Tr>
@@ -223,6 +246,37 @@ function scoreTitle(r: RankedCity, w: Weights): string {
     .join("\n");
 }
 
+/** The registry fields each score component is built from, for the Tier-2 note. */
+const COMPONENT_METRICS: Record<string, string[]> = {
+  talent: ["gcc_talent_share_pct"],
+  rent: ["office_rent_grade_a"],
+  salary: ["swe_ctc_mid", "swe_ctc_discount_vs_blr_pct"],
+  attrition: ["attrition_pct"],
+  incentives: [],
+};
+
+/**
+ * Tier-2 cities are opt-in, so when they are switched on the user needs to know why
+ * none of them appear in the ranking. Derived from the registry rather than asserted,
+ * so the wording can never drift from the seed: a Tier-2 city with no figure for any
+ * of the four data components cannot be scored at all.
+ */
+function tier2Note(reg: RegistryView, inputs: NavigatorInputs): string | null {
+  if (!inputs.open_to_tier2) return null;
+  const tier2 = reg.cities.filter((c) => c.tier === 2);
+  if (tier2.length === 0) return null;
+  const unscorable = tier2.filter((c) =>
+    COMPONENTS.every(
+      (k) =>
+        k === "incentives" ||
+        COMPONENT_METRICS[k].every((m) => !reg.numericFact(c.id, m)),
+    ),
+  );
+  if (unscorable.length === 0) return null;
+  const names = unscorable.map((c) => reg.cityName(c.id)).join(", ");
+  return `The registry has no talent share, rent, CTC or attrition figure for ${names}, so there is nothing to score them on. They stay out of the ranking until those figures are sourced — nothing is averaged in, imputed or guessed.`;
+}
+
 function missingText(reg: RegistryView, r: RankedCity): string {
   const missing = COMPONENTS.filter((k) => r.components[k] === null);
   if (missing.length === 0) return "coverage below 60% of the weight on these settings.";
@@ -232,7 +286,7 @@ function missingText(reg: RegistryView, r: RankedCity): string {
 export function incentiveStatus(
   reg: RegistryView,
   r: RankedCity,
-): { status?: "eligible" | "needs_check" | "not_eligible"; label?: string } {
+): { status?: "eligible" | "needs_check" | "not_eligible"; label?: string; unverified?: boolean } {
   const state = reg.stateForCity(r.city);
   if (r.eligibility.length === 0) {
     if (state?.gcc_policy_status === "none_known") {
@@ -240,7 +294,7 @@ export function incentiveStatus(
       return { label: asOf ? `No GCC fiscal policy on record (${asOf})` : "No GCC fiscal policy on record" };
     }
     if (state?.gcc_policy_status === "expected")
-      return { label: "Policy expected [UNVERIFIED]" };
+      return { label: "Policy expected", unverified: Boolean(state.unverified) };
     return { label: "No policy on record" };
   }
   if (r.eligibility.some((e) => e.status === "eligible")) return { status: "eligible" };

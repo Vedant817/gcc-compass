@@ -8,6 +8,7 @@ import type { RankedCity } from "@/lib/scoring";
 import { Card } from "@/components/ui/table";
 import { StatusPill, UnverifiedBadge, ConfidenceBadge, SiteLinkFlag, AiExtractedBadge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/button";
+import { CitationChip } from "@/components/CitationChip";
 import { factValue } from "@/lib/format";
 
 const INCENTIVE_TYPE_LABELS: Record<string, string> = {
@@ -102,7 +103,7 @@ export function EligibilityCards({
                         const src = reg.source(f.source_id);
                         return (
                           <li key={f.id} className="text-[13px] flex flex-wrap items-center gap-2">
-                            <span className="font-mono text-[11px] text-muted">{f.id}</span>
+                            <CitationChip id={f.id} />
                             <span>{f.value_text ?? factValue(f)}</span>
                             <span className="text-muted">(as of {f.as_of})</span>
                             {src && (

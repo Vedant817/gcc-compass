@@ -68,7 +68,7 @@ export async function POST(req: Request) {
     facts: body.overlay?.facts ?? [],
   });
   const planJson = body.plan ? JSON.stringify(body.plan) : "";
-  const system = buildAskSystem(reg, planJson);
+  const system = buildAskSystem(reg, planJson, body.plan);
 
   for (let attempt = 0; attempt < 2; attempt++) {
     let parsed: unknown;

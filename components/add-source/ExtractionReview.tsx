@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge, ConfidenceBadge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/toast";
 import { Field, Select, TextArea, TextInput } from "@/components/ui/field";
+import { CitationChip } from "@/components/CitationChip";
 import type { ExtractedT } from "@/lib/types";
 import { factValue } from "@/lib/format";
 import { ALLOWED_ENTITY_IDS } from "./addSourceShared";
@@ -212,21 +213,20 @@ export function ExtractionReview({
                 </div>
                 <div>
                   <dt className="text-muted inline">As of: </dt>
-                  <dd className="inline">
-                    {r.as_of ?? "—"}
-                    {r.as_of_defaulted && (
-                      <span className="text-xs text-muted">
-                        {" "}
-                        (the source&apos;s publication date — edit if the fact is about another
-                        period)
-                      </span>
-                    )}
-                  </dd>
+                  <dd className="inline">{r.as_of ?? "—"}</dd>
                 </div>
                 <div className="md:col-span-2">
                   <dt className="text-muted inline">Definition: </dt>
                   <dd className="inline">{r.definition_note ?? "—"}</dd>
                 </div>
+                {r.as_of_defaulted && (
+                  <div className="md:col-span-2">
+                    <dt className="text-muted inline">As-of source: </dt>
+                    <dd className="inline">
+                      the source&apos;s publication date — edit if the fact is about another period
+                    </dd>
+                  </div>
+                )}
               </dl>
             )}
 
@@ -301,7 +301,9 @@ export function RecentlyAdded({ facts }: { facts: { id: string; metric: string; 
         <tbody>
           {facts.map((f) => (
             <Tr key={f.id}>
-              <Td className="font-mono text-[11px]">{f.id}</Td>
+              <Td>
+                <CitationChip id={f.id} />
+              </Td>
               <Td>{f.entity_id}</Td>
               <Td className="font-mono text-[11px]">{f.metric}</Td>
               <Td>{f.value}</Td>

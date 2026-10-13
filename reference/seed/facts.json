@@ -744,7 +744,7 @@
     "value_text": null,
     "unit": "% YoY",
     "as_of": "Q2-2025",
-    "definition_note": "Rent index growth; no absolute Grade A rent in registry [UNVERIFIED city figure]",
+    "definition_note": "Rent index growth; the registry has no absolute Grade A rent figure for this city",
     "source_id": "src_iimb_cpri",
     "confidence": "L",
     "verified_by_human": false,

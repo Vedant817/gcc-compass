@@ -50,7 +50,7 @@ export default function MethodPage() {
                 <td className="border-b border-rule px-2 py-1">Low</td>
                 <td className="border-b border-rule px-2 py-1">
                   Single vendor source or hedged wording. Facts that could not be confirmed carry an
-                  [UNVERIFIED] badge and stay Low.
+                  Unverified badge and stay Low.
                 </td>
               </tr>
             </tbody>

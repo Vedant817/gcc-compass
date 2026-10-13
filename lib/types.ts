@@ -93,6 +93,20 @@ export const PolicySchema = z.object({
   name: z.string(),
   year: z.number().nullable(),
   summary: z.string().nullable(),
+  /**
+   * Optional size-class thresholds, for a policy whose caps depend on the class
+   * a company falls into. Absent means the class can't be worked out from the
+   * registry, which the Ask answer then states rather than guessing.
+   */
+  size_class_thresholds: z
+    .array(
+      z.object({
+        class: z.string(),
+        min_seats: z.number().nullable(),
+        min_investment_inr_cr: z.number().nullable(),
+      }),
+    )
+    .default([]),
   eligibility_json: z.object({
     all: z.array(RuleSchema),
     needs_check: z.array(z.string()).default([]),

@@ -29,10 +29,10 @@ export function ConfidenceBadge({ level }: { level: ConfidenceT }) {
 export function UnverifiedBadge() {
   return (
     <span
-      title="Marked [UNVERIFIED] in the registry: confidence is Low until a primary source confirms it."
+      title="Not confirmed by a primary source yet, so it stays at Low confidence."
       className="inline-block px-1.5 py-0.5 text-[11px] leading-4 border border-dashed border-status-noteligible text-status-noteligible bg-white whitespace-nowrap"
     >
-      [UNVERIFIED]
+      Unverified
     </span>
   );
 }

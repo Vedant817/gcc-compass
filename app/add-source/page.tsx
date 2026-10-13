@@ -18,6 +18,8 @@ type Meta = {
   url: string;
   published_date: string;
   type: Source["type"];
+  /** site-level when the URL is a publisher's site, not the exact page */
+  url_precision?: Source["url_precision"];
 };
 
 const EMPTY_META: Meta = {
@@ -63,7 +65,9 @@ export default function AddSourceView() {
 
   const loadSample = () => {
     setMeta(TELANGANA_SAMPLE.meta);
-    setText(`${TELANGANA_SAMPLE.text}\n\n(Sample text (paraphrased for demo))`);
+    // the sample text on its own; the "paraphrased" caption belongs to the UI,
+    // not to the text that gets sent for extraction
+    setText(TELANGANA_SAMPLE.text);
     setRows(null);
     setError(null);
     setSampleLoaded(true);
@@ -136,7 +140,7 @@ export default function AddSourceView() {
         published_date: meta.published_date.trim() || null,
         type: meta.type,
         reliability,
-        url_precision: url ? "exact" : "domain_only",
+        url_precision: meta.url_precision ?? (url ? "exact" : "domain_only"),
         notes: url ? "" : "No link recorded for this source.",
       };
       newSources = [...overlay.sources, source];

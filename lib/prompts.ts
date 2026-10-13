@@ -4,7 +4,7 @@
  * differ" notes, and extraction.
  */
 import type { Policy, RegistryView } from "./registry";
-
+import { planContextForAsk } from "./planContext";
 export function factLine(reg: RegistryView, f: import("./types").Fact): string {
   const src = reg.source(f.source_id);
   return JSON.stringify({
@@ -52,7 +52,7 @@ Rules:
 3. Never compute, round, average or estimate new numbers. You may quote the values exactly as given, including ranges.
 4. If sources conflict, list each value with its source and date, then say in one sentence why they likely differ, using only the definition, date and source type fields. Never pick a winner unless one fact is from an official policy and the other is not; then say that.
 5. If the question cannot be answered from the data, set not_in_registry to true and say plainly what is missing. Do not guess.
-6. If the user's plan is given, apply eligibility rules to it, but if a rule needs information the plan lacks, say "needs check" and name the missing input.
+6. If the user's plan is given, apply eligibility rules to it, but if a rule needs information the plan lacks, say "needs check" and name the missing input. Where a policy's caps depend on a size class, use only the class worked out in PLAN CLASSIFICATION below; if it says the class is not determinable, say that and name the missing input instead of quoting a cap.
 7. Write like a careful analyst: plain English, short paragraphs or bullets, no hype, no emoji, no "As an AI". Use ₹ and Indian units (lakh, crore) as in the data. Under 180 words.
 8. Flag any fact marked unverified with "(unverified)".
 
@@ -62,14 +62,23 @@ Return JSON only:
 USER PLAN (may be empty):
 {{plan_json}}
 
+PLAN CLASSIFICATION:
+{{plan_classification}}
+
 POLICIES:
 {{policies_jsonl}}
 
 FACTS:
 {{facts_jsonl}}`;
 
-export function buildAskSystem(reg: RegistryView, planJson: string): string {
+export function buildAskSystem(
+  reg: RegistryView,
+  planJson: string,
+  inputs?: import("./types").NavigatorInputs | null,
+): string {
+  const classification = inputs ? planContextForAsk(reg.policies, inputs) : "(not applicable)";
   return ASK_SYSTEM.replace("{{plan_json}}", planJson || "(none)")
+    .replace("{{plan_classification}}", classification)
     .replace("{{policies_jsonl}}", policiesJsonl(reg))
     .replace("{{facts_jsonl}}", factsJsonl(reg, reg.facts));
 }
@@ -93,6 +102,8 @@ export function buildWhySystem(reg: RegistryView, facts: import("./types").Fact[
 const EXTRACT_SYSTEM = `You extract structured facts about Global Capability Centres (GCCs) in India from a pasted document, for a registry that a human will review.
 
 Extract only facts that are explicitly stated in the text. For each fact give an exact supporting quote copied verbatim from the text (max 300 characters). If a field is not stated, use null. Never infer numbers, never convert units, never fill gaps from your own knowledge. Prefer fewer, correct facts over many.
+
+value_text is what a reviewer reads as the answer, so it must be a full phrase in your own words (at least four words), never a slice of the quote: "no dedicated GCC fiscal incentive policy is in place yet", not "being considered". The quote is already the verbatim evidence; value_text is the summary of it. Published figures and ranges (for example "1,800-1,900") are the exception — those are the value and may appear inside the quote. Report each entity+metric once.
 
 Allowed entity_type: country | city | state | provider. Use entity_id from this list when it matches: country IN; states KA MH GJ UP TN MP TS HR; cities bengaluru hyderabad pune chennai mumbai ncr_gurugram ncr_noida ahmedabad_gift coimbatore indore lucknow. If no match, set entity_id null and put the name in entity_name.
 

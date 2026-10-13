@@ -6,6 +6,7 @@ import { Extracted } from "@/lib/types";
 import { chatJson, llmConfigured, LLMError } from "@/lib/llm";
 import { buildExtractSystem } from "@/lib/prompts";
 import { findCachedExtraction } from "@/lib/cachedExtractions";
+import { shapeExtractedFacts } from "@/lib/extraction";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -126,9 +127,9 @@ function htmlToText(html: string): string {
 }
 
 /** Runs the cheap, model-free checks over a candidate result and shapes it. */
-function shapeFacts(result: z.infer<typeof Extracted>, text: string) {
+function shapeFacts(facts: z.infer<typeof Extracted>["facts"], text: string) {
   const normalisedText = text.replace(/\s+/g, " ").trim();
-  return result.facts.map((f) => {
+  return facts.map((f) => {
     const value_num = f.value_num ?? null;
     const value_text = f.value_text ?? null;
     const quote = f.quote.replace(/\s+/g, " ").trim();
@@ -234,7 +235,7 @@ export async function POST(req: Request) {
   /** Serve the pre-validated rows, labelled as cached, instead of failing. */
   const fallback = (entry: { result: z.infer<typeof Extracted> }) =>
     NextResponse.json({
-      facts: shapeFacts(entry.result, text),
+      facts: shapeFacts(entry.result.facts, text),
       warnings: entry.result.warnings,
       cached: true,
     });
@@ -282,5 +283,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "The model's reply didn't match the fact schema." }, { status: 502 });
   }
 
-  return NextResponse.json({ facts: shapeFacts(res.data, text), warnings: res.data.warnings });
+  // One row worth reading per entity+metric: drop values that are just a slice
+  // of their own quote, then collapse duplicates to the most complete row.
+  const shaped = shapeExtractedFacts(res.data.facts);
+  if (shaped.droppedUnusable > 0 || shaped.deduped > 0) {
+    console.error(
+      `[extract] filtered rows: ${shaped.droppedUnusable} without a usable value, ${shaped.deduped} duplicates`,
+    );
+  }
+
+  return NextResponse.json({ facts: shapeFacts(shaped.facts, text), warnings: res.data.warnings });
 }
