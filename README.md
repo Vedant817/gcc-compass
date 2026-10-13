@@ -7,7 +7,7 @@ state incentives you actually qualify for, and what it costs over three years.
 
 Built by Vedant Mahajan for the Flexiple Product Intern take-home, October 2026.
 
-Live: <https://gcc-compas-vedants-projects-8098650d.vercel.app> · Source:
+Live: <https://gcc-compas.vercel.app> · Source:
 <https://github.com/Vedant817/gcc-compass>
 
 ## What it is
@@ -37,7 +37,7 @@ link is flagged "site-level link" instead of a guessed URL. Missing data is show
 missing: Chennai isn't ranked because there's no CTC or attrition figure, and the app says
 so instead of guessing.
 
-Validate the seed with `python3 pack/scripts/validate_seed.py`; the TypeScript twin of
+Validate the seed with `python3 reference/scripts/validate_seed.py`; the TypeScript twin of
 those checks runs in `npm test`.
 
 ## How the score works
@@ -56,7 +56,7 @@ judgment, not data, so the sliders are right there: switch from Lowest cost to T
 and Bengaluru climbs from 31.8 to 50.9. The weights, the formula and the assumptions
 (A1-A5 on the cost estimate) are all on screen.
 
-The scoring, eligibility and cost logic is a TypeScript port of `pack/scripts/reference_scoring.py`,
+The scoring, eligibility and cost logic is a TypeScript port of `reference/scripts/reference_scoring.py`,
 and the unit tests reproduce `seed/expected_demo_output.json`: Pune 77.2, Hyderabad 57.2,
 Bengaluru 31.8 on Lowest cost; Pune's 3-year total ≈ ₹44.69 Cr.
 
@@ -85,7 +85,7 @@ npm install
 cp .env.example .env.local     # add your LLM keys (optional; AI features say "AI is off" without them)
 npm run dev                    # http://localhost:3000
 npm test                       # 80 unit tests: scoring, eligibility, cost, grounding, seed integrity
-python3 pack/scripts/validate_seed.py   # seed validator from the pack
+python3 reference/scripts/validate_seed.py   # seed validator from the pack
 ```
 
 Verification scripts (all take `BASE_URL`, defaulting to `http://localhost:3100`):
@@ -135,6 +135,10 @@ installs don't download browsers the app never uses at runtime.
   page; those are flagged rather than guessed.
 - **The CTC proxy.** The cost estimate applies the mid-level SWE CTC to every seat,
   including ops roles, so it overstates ops-heavy teams. The assumption is labelled A4.
+- **No staleness badges.** The app shows every fact's as-of date, but it never flags how
+  old it is: a rent figure from 2024 renders exactly like one from this month. Rent older
+  than 180 days or a GCC count older than a year would deserve a badge, and there isn't
+  one yet, so a stale number is easy to miss.
 - **Plan recomputation.** A plan link recomputes from the seed registry; AI-approved facts
   added after the plan was saved aren't in the link.
 - **Single plan per browser.** Plans live in URLs and localStorage; there are no accounts.
@@ -149,7 +153,6 @@ installs don't download browsers the app never uses at runtime.
   living in one browser.
 - Widen the seed: CTC and attrition figures for Chennai, Mumbai and NCR would take them out
   of "Not enough data".
-- Staleness badges (rent after 180 days, counts after a year).
 - A compare-two-cities view and a city map, both gated on the same registry.
 
 ## Repo map
@@ -160,8 +163,9 @@ components/     UI primitives (restyled, no default theme) + feature components
 lib/            registry, scoring, eligibility, cost, llm, prompts, grounding, plan, overlay
 data/seed/      the registry seed (sources, facts, cities, states, policies, providers)
 tests/          vitest: scoring vs expected_demo_output.json, eligibility, grounding, seed
-pack/           the build pack this was made from (spec, design guide, reference implementation)
-scripts/        smoke.mjs (demo script + screenshots), shot-addsource.mjs
+scripts/        smoke.mjs (demo script + screenshots), shot-addsource.mjs, mobile-check.mjs
+reference/      the pack's reference implementation (scoring, seed validator) and its seed JSON
+pack/           the build pack this was made from (spec, design guide) — context, not shipped code
 screenshots/    the five deck screenshots (1440×900) and the plan export
 ```
 

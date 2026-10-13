@@ -1,6 +1,6 @@
 /**
  * Mobile layout check: no horizontal overflow at 390 px on every page.
- * Usage: BASE_URL=https://gcc-compas-vedants-projects-8098650d.vercel.app node scripts/mobile-check.mjs
+ * Usage: BASE_URL=https://gcc-compas.vercel.app node scripts/mobile-check.mjs
  *        BASE_URL=http://localhost:3100 node scripts/mobile-check.mjs
  */
 import { chromium } from "playwright";

@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import { seedRegistry } from "../lib/registry";
 
 /**
- * TypeScript twin of pack/scripts/validate_seed.py: uniqueness, referential
+ * TypeScript twin of reference/scripts/validate_seed.py: uniqueness, referential
  * integrity and the enum/unverified rules. `npm test` runs both this and
- * `python3 pack/scripts/validate_seed.py`.
+ * `python3 reference/scripts/validate_seed.py`.
  */
 const { sources, facts, cities, states, policies, providers } = seedRegistry;
 

@@ -1,8 +1,6 @@
 # Note on deviations and unfinished items
 
-Production URL: **https://gcc-compas-vedants-projects-8098650d.vercel.app**
-(the `gcc-compass.vercel.app` subdomain was already owned by another Vercel account, so
-the project's own domain is the public one).
+Production URL: **https://gcc-compas.vercel.app**
 
 Everything in the pack's build plan (M0-M8) is implemented. The items below are choices I
 made where the pack was ambiguous, or limits I hit while building. Each one keeps the data
@@ -59,9 +57,10 @@ honest; none of them changes a number the pack specified.
   confidence, the score, the cost assumptions, where AI is constrained and neutrality.
 - **Staleness badges** (rent > 180 days, counts > 365) are not implemented — the "nice-to-have"
   list in 03.
-- **Seed regeneration tool.** `pack/scripts/build_seed.py` was part of the pack; it is not in
-  this repo (it was lost in a file move during scaffolding). `validate_seed.py` and
-  `reference_scoring.py` are present verbatim, and the seed JSON is intact.
+- **Seed regeneration tool.** `build_seed.py` was part of the pack; it is not in
+  this repo (it was lost in a file move during scaffolding). `reference/scripts/validate_seed.py`
+  and `reference/scripts/reference_scoring.py` are present verbatim, and the seed JSON is
+  intact.
 - **Screenshots** are taken at 1440x900 from the production deployment via
   `scripts/smoke.mjs` (Playwright), saved to `screenshots/` and committed.
 

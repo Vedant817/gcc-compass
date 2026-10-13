@@ -8,7 +8,7 @@
     "start": "next start",
     "test": "vitest run",
     "test:watch": "vitest",
-    "validate:seed": "python3 pack/scripts/validate_seed.py"
+    "validate:seed": "python3 reference/scripts/validate_seed.py"
   },
   "dependencies": {
     "clsx": "^2.1.1",
