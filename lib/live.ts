@@ -4,8 +4,10 @@
  *
  * Why it is additive rather than a replacement, stated once here because it
  * governs every line below: the seed's value is its provenance. Every figure in
- * it was read by a person, carries a quote, a source and a confidence level, and
- * keeps competing figures as separate rows. A JSON API has none of those, so a
+ * it was read by a person who recorded where it came from - a named source, an
+ * as-of date, a confidence level - and competing figures are kept as separate
+ * rows rather than reconciled. (Not a verbatim quote: quotes exist only on facts
+ * a reviewer extracted through /add-source.) A JSON API has none of that, so a
  * live row can never claim the same authority. It is context the seed has no way
  * to provide, not a better copy of what the seed already knows.
  *

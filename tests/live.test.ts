@@ -25,10 +25,12 @@ const liveFact = (over: Partial<Fact> = {}): Fact => ({
   entity_type: "country",
   entity_id: "IN",
   metric: "gdp_per_capita_usd",
-  value_num: 2600,
+  // A round placeholder, not a published figure: this fixture must not be
+  // mistaken for a snapshot of the live API.
+  value_num: 1,
   value_text: null,
   unit: "USD",
-  as_of: "2024",
+  as_of: "2019",
   definition_note: "GDP per capita, current US dollars.",
   source_id: "src_live_worldbank",
   confidence: "L",

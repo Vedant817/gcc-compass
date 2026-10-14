@@ -40,7 +40,7 @@ describe("rules engine", () => {
   });
 });
 
-describe("Tamil Nadu (demo persona)", () => {
+describe("Tamil Nadu (400 staff, not Global 2000)", () => {
   it("is not eligible with both reasons listed", () => {
     const res = evaluatePolicy(tn, { ...persona, city_id: "chennai" });
     expect(res.status).toBe("not_eligible");

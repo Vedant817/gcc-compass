@@ -1,4 +1,11 @@
+-- Historical brief, not a description of this app. This file is the original client brief, kept as
+-- a record of what was asked for. It is not a description of what GCC Compass does today.
+-- Three specified items were deliberately not built: the demo persona, the built-in Telangana
+-- sample article, and the cached-extraction fallback. DEVIATIONS.md at the repo root records why.
+-- Where a path named here differs from the repo, the repo wins. Read the code and DEVIATIONS.md.
+
 -- GCC Compass schema (SQLite / Turso / libSQL). JSON columns are TEXT holding JSON.
+-- Note: 07 Option B (Turso/libSQL) was not taken; the app reads data/seed/*.json. See DEVIATIONS.md.
 CREATE TABLE states (
   id TEXT PRIMARY KEY,               -- 'KA','MH','GJ','UP','TN','MP','TS','HR'
   name TEXT NOT NULL,

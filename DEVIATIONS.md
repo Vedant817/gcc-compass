@@ -23,10 +23,10 @@ honest; none of them changes a number the pack specified.
 3. **Grounding allow-list is a superset of 05.** The pack allows numbers from
    `value_num`, `value_text`, `conditions` and `cap_inr_cr`. I also allow: numbers in a
    cited fact's `definition_note` (the "why they differ" prompt shows the model that text, so
-   it may quote it), eligibility rule values and `fail_reason` strings (the demo answer
-   quotes "Global 2000" and "200+ direct employees" from `pol_tn_2024`), policy `name`/
-   `year`/`summary`, source publication dates, and the user's own plan inputs (the expected
-   Maharashtra answer says "your 40 → 120 seat plan"). Small ordinals 1-10 and plausible
+   it may quote it), eligibility rule values and `fail_reason` strings (the expected scoring
+   output quotes "Global 2000" and "200+ direct employees" from `pol_tn_2024`), policy `name`/
+   `year`/`summary`, source publication dates, and the user's own plan inputs (its Maharashtra
+   answer says "your 40 → 120 seat plan"). Small ordinals 1-10 and plausible
    years 2020-2035 are always allowed, as in 05. The purpose — no invented figures — is
    unchanged, and the tests cover it.
 4. **Extraction "as of" default.** When the model returns `as_of: null`, the review row is
@@ -49,9 +49,12 @@ honest; none of them changes a number the pack specified.
    fully hardcoded seed. I added a World Bank Open Data layer next to it: four indicators fetched
    at request time (GDP per capita for India and the five HQ countries, plus India's PPP figure,
    population and GDP growth), cached six hours, never throwing. It is additive context, not a
-   replacement, and the reason is provenance. The seed's value is that a person read each figure,
-   it carries a quote, a source and a confidence level, and competing figures are kept as separate
-   rows rather than reconciled — a JSON API has none of that. So live rows land after the seed and
+   replacement, and the reason is provenance. The seed's value is that a person read each figure
+   and recorded where it came from: every fact names its source, carries an as-of date and a
+   confidence level, and competing figures are kept as separate rows rather than reconciled —
+   a JSON API has none of that. One thing the seed does *not* carry is a verbatim quote; quotes
+   exist only on facts a reviewer extracted through `/add-source`. So live rows land after the
+   seed and
    `numericFact` returns the first match, which means a live figure can never displace a curated
    one; no score, ranking or cost estimate depends on one. Every live row is Low confidence and
    Unverified, badged "live API" in the UI, and no attribution-free copy of it is rendered: the

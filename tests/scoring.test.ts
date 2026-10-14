@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { rank, PRESET_WEIGHTS, missingComponents } from "../lib/scoring";
 import { threeYear, COST_ASSUMPTIONS } from "../lib/cost";
 import { RegistryView } from "../lib/registry";
-import expected from "../data/seed/expected_demo_output.json";
+import expected from "./fixtures/expected_scoring.json";
 import type { NavigatorInputs } from "../lib/types";
 
 const reg = RegistryView.load();
@@ -12,7 +12,7 @@ function byCity(rows: ReturnType<typeof rank>): Record<string, (typeof rows)[num
   return Object.fromEntries(rows.map((r) => [r.city, r]));
 }
 
-describe("ranking matches expected_demo_output.json (Lowest cost preset)", () => {
+describe("ranking matches expected_scoring.json (Lowest cost preset)", () => {
   const ranked = byCity(rank(reg, persona, PRESET_WEIGHTS.cost));
 
   it("has the same city set", () => {

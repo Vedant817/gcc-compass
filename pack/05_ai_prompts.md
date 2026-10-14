@@ -1,3 +1,11 @@
+> **Historical brief, not a description of this app.** This file is the original client brief, kept as a record of what was asked for. It is not a description of what GCC Compass does today.
+>
+> Three specified items were deliberately not built: the demo persona, the built-in Telangana sample article, and the cached-extraction fallback. `DEVIATIONS.md` at the repo root records why.
+>
+> Where a path named here differs from the repo, the repo wins. Read the code and `DEVIATIONS.md`, not this file.
+
+---
+
 # 05 AI prompts and schemas
 
 One OpenAI-compatible chat-completions client (`lib/llm.ts`) using `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`. Use `response_format: {type: "json_object"}` (or json_schema where supported), temperature 0.1-0.2. Validate every response with **zod**; on parse failure retry once with the error appended, then fail gracefully.

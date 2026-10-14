@@ -1,3 +1,11 @@
+> **Historical brief, not a description of this app.** This file is the original client brief, kept as a record of what was asked for. It is not a description of what GCC Compass does today.
+>
+> Three specified items were deliberately not built: the demo persona, the built-in Telangana sample article, and the cached-extraction fallback. `DEVIATIONS.md` at the repo root records why.
+>
+> Where a path named here differs from the repo, the repo wins. Read the code and `DEVIATIONS.md`, not this file.
+
+---
+
 # 04 Scoring, eligibility rules and 3-year cost
 
 Reference implementation: `scripts/reference_scoring.py`. Expected output for the demo persona: `seed/expected_demo_output.json`. Port to `lib/scoring.ts`, `lib/eligibility.ts`, `lib/cost.ts` and unit-test against the JSON (tolerance ±0.1 score, ±0.1 lakh).

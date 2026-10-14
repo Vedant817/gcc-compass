@@ -162,7 +162,7 @@ export default function MethodPage() {
             The scoring, eligibility and cost logic is a port of{" "}
             <span className="font-mono text-[12px]">reference/scripts/reference_scoring.py</span>, and the
             unit tests reproduce{" "}
-            <span className="font-mono text-[12px]">data/seed/expected_demo_output.json</span> (Pune 77.2,
+            <span className="font-mono text-[12px]">tests/fixtures/expected_scoring.json</span> (Pune 77.2,
             Hyderabad 57.2, Bengaluru 31.8 on Lowest cost; Pune 3-year ≈ ₹44.69 Cr). Run{" "}
             <span className="font-mono text-[12px]">npm test</span> and{" "}
             <span className="font-mono text-[12px]">python3 reference/scripts/validate_seed.py</span>.

@@ -1,7 +1,7 @@
 /**
  * Browser overlay: AI-approved facts, new sources, leads and the latest plan
- * live in localStorage so they survive a refresh in the demo browser (07
- * Option A). The seed itself is never modified.
+ * live in localStorage so they survive a refresh in the browser (07 Option A).
+ * The seed itself is never modified.
  */
 import type { Fact, NavigatorInputs, Source, Weights } from "./types";
 
@@ -39,7 +39,7 @@ function write(key: string, value: unknown): void {
   try {
     window.localStorage.setItem(key, JSON.stringify(value));
   } catch {
-    /* storage full or blocked: the demo still works in-session */
+    /* storage full or blocked: the app still works in-session */
   }
 }
 

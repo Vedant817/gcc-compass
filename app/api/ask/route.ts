@@ -26,10 +26,10 @@ const RETRY_AFTER_S = "60";
 
 /**
  * Generous on purpose. This limit exists to stop one client looping the route, not
- * to ration a reader: at 20/min a two-minute demo could still trip it on a shared
- * office IP, and on a free-tier model key the scarce resource is upstream anyway.
- * The model client already cools off a model after a 429, which is the limit that
- * actually protects the quota.
+ * to ration a reader: it has to leave headroom for everyone behind one NAT'd office
+ * IP, and on a free-tier model key the scarce resource is upstream anyway. The model
+ * client already cools off a model after a 429, which is the limit that actually
+ * protects the quota.
  */
 const ASKS_PER_MINUTE = 60;
 const hits = new Map<string, { count: number; reset: number }>();

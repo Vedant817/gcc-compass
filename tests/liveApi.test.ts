@@ -15,21 +15,24 @@ const POP: { metric: string; code: string; unit: string | null; definition: stri
 
 describe("parsing a World Bank payload", () => {
   it("turns a row into a registry fact", () => {
-    const rows: WbRow[] = [{ countryiso3code: "IND", date: "2025", value: 2_702.47 }];
+    // Deliberately not a real World Bank figure. A fixture holding the current
+    // published value reads as a cached copy of the API and goes stale the
+    // moment the series is revised; these tests assert the parsing, not the data.
+    const rows: WbRow[] = [{ countryiso3code: "IND", date: "2019", value: 1_234.5 }];
     const [f] = parseWorldBank(rows, POP);
     expect(f).toMatchObject({
       id: "live_wb_population_total_in",
       entity_type: "country",
       entity_id: "IN",
-      value_num: 2_702.47,
-      as_of: "2025",
+      value_num: 1_234.5,
+      as_of: "2019",
     });
   });
 
   it("drops a null value rather than reporting a zero", () => {
     const rows: WbRow[] = [
-      { countryiso3code: "IND", date: "2025", value: null },
-      { countryiso3code: "IND", date: "2025", value: 0 },
+      { countryiso3code: "IND", date: "2019", value: null },
+      { countryiso3code: "IND", date: "2019", value: 0 },
     ];
     const facts = parseWorldBank(rows, POP);
     // a genuine zero is data; a null is the absence of an answer
@@ -38,7 +41,7 @@ describe("parsing a World Bank payload", () => {
   });
 
   it("marks every live row unreviewed", () => {
-    const facts = parseWorldBank([{ countryiso3code: "IND", date: "2025", value: 1 }], POP);
+    const facts = parseWorldBank([{ countryiso3code: "IND", date: "2019", value: 1 }], POP);
     for (const f of facts) {
       expect(f.unverified).toBe(true);
       expect(f.confidence).toBe("L");
@@ -50,8 +53,8 @@ describe("parsing a World Bank payload", () => {
   it("gives each country its own id, so a batch cannot self-collide", () => {
     const facts = parseWorldBank(
       [
-        { countryiso3code: "IND", date: "2025", value: 1 },
-        { countryiso3code: "USA", date: "2025", value: 2 },
+        { countryiso3code: "IND", date: "2019", value: 1 },
+        { countryiso3code: "USA", date: "2019", value: 2 },
       ],
       POP,
     );
@@ -60,7 +63,7 @@ describe("parsing a World Bank payload", () => {
 
   it("survives a malformed payload", () => {
     expect(parseWorldBank(undefined as unknown as WbRow[], POP)).toEqual([]);
-    expect(parseWorldBank([{ date: "2025", value: 1 }], POP)).toEqual([]);
+    expect(parseWorldBank([{ date: "2019", value: 1 }], POP)).toEqual([]);
   });
 });
 
@@ -81,7 +84,7 @@ describe("country mapping", () => {
     // the World Bank says "IND"; the registry's country id is "IN". If these
     // drifted apart, live and seeded facts about India would sit under two ids
     // and no lookup would find both.
-    const [f] = parseWorldBank([{ countryiso3code: "IND", date: "2025", value: 1 }], POP);
+    const [f] = parseWorldBank([{ countryiso3code: "IND", date: "2019", value: 1 }], POP);
     expect(f.entity_id).toBe("IN");
   });
 });

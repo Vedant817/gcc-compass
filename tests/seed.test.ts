@@ -82,8 +82,8 @@ describe("seed integrity", () => {
     }
   });
 
-  it("the expected demo output file is consistent with the seed", async () => {
-    const exp = (await import("../data/seed/expected_demo_output.json")).default;
+  it("the expected scoring output file is consistent with the seed", async () => {
+    const exp = (await import("./fixtures/expected_scoring.json")).default;
     expect(exp.ranking.find((r) => r.city === "pune")?.score).toBe(77.2);
     expect(exp.three_year.pune.total_lakh).toBe(4468.7);
   });

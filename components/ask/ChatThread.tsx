@@ -131,9 +131,8 @@ export function ChatThread() {
                   className="text-sm text-slate border border-rule rounded bg-white px-2.5 py-1 hover:border-slate-light"
                   onClick={() => {
                     // Fill the box rather than sending. The reader may want to
-                    // edit or drop the suggestion, and on a free-tier key a demo
-                    // should not spend a scarce answer on a click they didn't
-                    // mean as final.
+                    // edit or drop the suggestion, and on a scarce key an answer
+                    // should not be spent on a click they didn't mean as final.
                     setQuestion(s);
                     inputRef.current?.focus();
                   }}
