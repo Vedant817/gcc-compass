@@ -148,7 +148,13 @@ await page.waitForTimeout(200);
 // 3. Ask --------------------------------------------------------------------
 try {
   await page.goto(`${BASE}/ask`, { waitUntil: "networkidle" });
+  // A suggestion chip fills the input rather than sending it, so the send has to
+  // be a second, deliberate click. Clicking only the chip and then waiting for
+  // an answer waits on a request that was never made.
   await page.getByRole("button", { name: "What would Maharashtra pay me?" }).click();
+  const prefilled = await page.locator("#ask-input").inputValue();
+  check("suggestion fills the input without sending", prefilled.includes("Maharashtra"));
+  await page.getByRole("button", { name: "Ask", exact: true }).click();
   await page.waitForSelector("text=/Answered from/", { timeout: 90000 });
   const askText = await page.locator("main").innerText();
   check("ask cites pol_mh_2025", /pol_mh_2025/.test(askText));
