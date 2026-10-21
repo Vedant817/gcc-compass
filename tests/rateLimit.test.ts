@@ -75,16 +75,18 @@ describe("makeRateLimiter", () => {
     expect(limited("e2")).toBe(false); // eviction made room for a fresh key
   });
 
-  it("eviction is bounded: entries outlive map-cap crossings instead of a wiped map", () => {
-    const limited = makeRateLimiter({ limitPerMinute: 2, maxTrackedIps: 5 });
+  it("eviction prefers idle entries: a re-accessed bucket survives repeated crossings", () => {
+    const limited = makeRateLimiter({ limitPerMinute: 1, maxTrackedIps: 5 });
     for (const ip of ["a", "b", "c", "d", "e"]) limited(ip);
-    expect(limited("b")).toBe(false); // second hit, active
+    expect(limited("b")).toBe(true); // in-window second hit trips 1/min — and refreshes b
 
-    limited("f"); // evicts only the oldest ("a")
-    expect(limited("b")).toBe(true); // b keeps its counter: 3rd hit over the limit
+    limited("f"); // the least-recently-touched entry ("a") evicts — never the map
+    expect(limited("b")).toBe(true); // b survived: its refresh moved it out of the victim seat
 
-    limited("g"); // evicts the next-oldest ("b") one at a time — never a wholesale wipe
-    expect(limited("e")).toBe(false); // e, newer than b, is still tracked
+    limited("g");
+    limited("h");
+    limited("i"); // idle c, d, e drop one at a time under the flood; b never does
+    expect(limited("b")).toBe(true); // four crossings later, the active bucket is intact
   });
 });
 

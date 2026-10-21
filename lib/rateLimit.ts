@@ -9,8 +9,10 @@
  *    (and overwritten) by the platform, so it is trusted first; without it, the
  *    rightmost `x-forwarded-for` entry is the one the platform appended.
  * 2. The bucket map is bounded. When it fills up, expired buckets go first, then
- *    the oldest tracked one. Never wiping the whole map means a flood of spoofed
- *    keys cannot reset other clients' active counters.
+ *    the least-recently-used tracked one — a key's place is refreshed on every
+ *    hit, so an active client is never the eviction victim. Never wiping the
+ *    whole map means a flood of spoofed keys cannot reset other clients' active
+ *    counters.
  */
 
 /** Narrow header shape so tests can pass plain objects with a `Headers`-like getter. */
@@ -78,7 +80,8 @@ export function makeRateLimiter(options: RateLimiterOptions): (ip: string) => bo
         for (const [key, rec] of hits) {
           if (now > rec.reset) hits.delete(key);
         }
-        // still full: drop the oldest tracked keys one at a time, never the map
+        // still full: drop the least-recently-touched keys one at a time,
+        // never the map
         while (hits.size >= maxTrackedIps) {
           const oldest = hits.keys().next().value;
           if (oldest === undefined) break;
@@ -88,6 +91,10 @@ export function makeRateLimiter(options: RateLimiterOptions): (ip: string) => bo
       hits.set(ip, { count: 1, reset: now + 60_000 });
       return false;
     }
+    // refresh the key's place: eviction judges buckets by last use, so a client
+    // that arrived early but is actively spending is never the eviction victim
+    hits.delete(ip);
+    hits.set(ip, bucket);
     bucket.count += 1;
     return bucket.count > options.limitPerMinute;
   };
