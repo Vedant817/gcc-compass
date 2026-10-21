@@ -5,6 +5,7 @@ import { RegistryView } from "@/lib/registry";
 import { chatJson, llmConfigured, LLMError } from "@/lib/llm";
 import { buildAskSystem } from "@/lib/prompts";
 import { checkGrounded } from "@/lib/grounding";
+import { clientIp, makeRateLimiter } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -21,7 +22,6 @@ const Body = z.object({
 });
 
 /** Per-IP in-memory rate limit (best effort on serverless: per warm instance). */
-const MAX_TRACKED_IPS = 500;
 const RETRY_AFTER_S = "60";
 
 /**
@@ -32,22 +32,7 @@ const RETRY_AFTER_S = "60";
  * protects the quota.
  */
 const ASKS_PER_MINUTE = 60;
-const hits = new Map<string, { count: number; reset: number }>();
-
-function rateLimited(ip: string): boolean {
-  const now = Date.now();
-  const rec = hits.get(ip);
-  if (!rec || now > rec.reset) {
-    if (hits.size >= MAX_TRACKED_IPS) {
-      for (const [key, r] of hits) if (now > r.reset) hits.delete(key);
-      if (hits.size >= MAX_TRACKED_IPS) hits.clear();
-    }
-    hits.set(ip, { count: 1, reset: now + 60_000 });
-    return false;
-  }
-  rec.count += 1;
-  return rec.count > ASKS_PER_MINUTE;
-}
+const rateLimited = makeRateLimiter({ limitPerMinute: ASKS_PER_MINUTE });
 
 /** Rate-limited by the model service: a 429 the browser can act on. */
 function busyResponse() {
@@ -58,7 +43,7 @@ function busyResponse() {
 }
 
 export async function POST(req: Request) {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
+  const ip = clientIp(req);
   if (rateLimited(ip)) return busyResponse();
 
   let body: z.infer<typeof Body>;

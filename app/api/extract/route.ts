@@ -6,6 +6,7 @@ import { Extracted } from "@/lib/types";
 import { chatJson, llmConfigured, LLMError } from "@/lib/llm";
 import { buildExtractSystem } from "@/lib/prompts";
 import { shapeExtractedFacts } from "@/lib/extraction";
+import { clientIp, makeRateLimiter } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -24,29 +25,13 @@ const Body = z.object({
 
 /* --------------------------------- rate limit ------------------------------ */
 
-const hits = new Map<string, { count: number; reset: number }>();
-const MAX_TRACKED_IPS = 500;
 /**
  * 10/min. Extraction is the most expensive call in the app (a full document in,
  * structured facts out) and one reader works one document at a time, so this leaves
  * room to retry a bad paste without letting one client work the route.
  */
 const EXTRACT_LIMIT = 10; // per minute
-
-function rateLimited(ip: string): boolean {
-  const now = Date.now();
-  const rec = hits.get(ip);
-  if (!rec || now > rec.reset) {
-    if (hits.size >= MAX_TRACKED_IPS) {
-      for (const [key, r] of hits) if (now > r.reset) hits.delete(key);
-      if (hits.size >= MAX_TRACKED_IPS) hits.clear();
-    }
-    hits.set(ip, { count: 1, reset: now + 60_000 });
-    return false;
-  }
-  rec.count += 1;
-  return rec.count > EXTRACT_LIMIT;
-}
+const rateLimited = makeRateLimiter({ limitPerMinute: EXTRACT_LIMIT });
 
 /* ----------------------------------- SSRF ---------------------------------- */
 
@@ -161,7 +146,7 @@ function shapeFacts(facts: z.infer<typeof Extracted>["facts"], text: string) {
 }
 
 export async function POST(req: Request) {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "local";
+  const ip = clientIp(req);
   if (rateLimited(ip)) {
     return NextResponse.json(
       { error: "Too many extractions from this address. Wait a minute." },
