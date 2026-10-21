@@ -33,6 +33,17 @@ const Body = z.object({
 const EXTRACT_LIMIT = 10; // per minute
 const rateLimited = makeRateLimiter({ limitPerMinute: EXTRACT_LIMIT });
 
+/**
+ * The fetch allowance: a URL request makes the server resolve DNS and open an
+ * outbound fetch long before the model call, and a request that fails the
+ * fetch (or yields a too-short page) never reaches the spend limiter below —
+ * so without a charge here, looping over erroring or short texts is free
+ * network work. Budgeted the same as the spend allowance: ten successful
+ * extractions a minute is the spend cap anyway.
+ */
+const EXTRACT_FETCH_LIMIT = 10; // per minute
+const fetchLimited = makeRateLimiter({ limitPerMinute: EXTRACT_FETCH_LIMIT });
+
 /* ----------------------------------- SSRF ---------------------------------- */
 
 const MAX_FETCH_BYTES = 2 * 1024 * 1024; // 2 MB
@@ -155,6 +166,15 @@ export async function POST(req: Request) {
 
   let text = body.text?.trim() ?? "";
   if (!text && body.url) {
+    // fetch charge before any network I/O: this gate sits ahead of the DNS
+    // lookup and the outbound fetch, so an over-limit client (even one whose
+    // requests fail fast) is stopped at the dial, not after the response is in
+    if (fetchLimited(clientIp(req))) {
+      return NextResponse.json(
+        { error: "Too many URL fetches from this address. Wait a minute." },
+        { status: 429, headers: { "Retry-After": "60" } },
+      );
+    }
     let target: URL;
     try {
       target = await assertSafeUrl(body.url);
@@ -216,7 +236,8 @@ export async function POST(req: Request) {
 
   // spend limit immediately before the model call: the allowance pays for the
   // extraction call, not for malformed body shapes, short pastes or fetch
-  // failures — the fetch itself is bounded by its own 2 MB / 8 s caps
+  // failures — URL requests were charged a fetch allowance before the network
+  // I/O began (above), and this one covers the model spend itself
   // (same policy as /api/why, whose moves this mirrors)
   const ip = clientIp(req);
   if (rateLimited(ip)) {
