@@ -4,6 +4,7 @@ import { registry } from "@/lib/registry";
 import { chatJson, llmConfigured, LLMError } from "@/lib/llm";
 import { buildWhySystem } from "@/lib/prompts";
 import { checkGrounded } from "@/lib/grounding";
+import { clientIp, makeRateLimiter } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -34,6 +35,16 @@ function cacheSet(key: string, value: { note: string; cited_ids: string[] }): vo
 function keyOf(ids: string[]): string {
   return [...ids].sort().join(",");
 }
+
+/**
+ * Why burns the same model key as Ask for a short note. The note cache keeps
+ * repeats cheap, but every fresh fact pair still calls the model, so the route
+ * carries its own per-IP spend limiter like the other LLM routes. The check
+ * sits immediately before the model call: cache hits, empty queries and
+ * AI-off answers spend no model quota, so they must not spend allowance.
+ */
+const WHYS_PER_MINUTE = 30;
+const rateLimited = makeRateLimiter({ limitPerMinute: WHYS_PER_MINUTE });
 
 export async function POST(req: Request) {
   let body: z.infer<typeof Body>;
@@ -66,6 +77,16 @@ export async function POST(req: Request) {
   const key = keyOf(facts.map((f) => f.id));
   const cached = cache.get(key);
   if (cached) return NextResponse.json(cached);
+
+  // charge the allowance only where model spend can happen; everything above
+  // this line is a free answer
+  const ip = clientIp(req);
+  if (rateLimited(ip)) {
+    return NextResponse.json(
+      { error: "Busy, try again in a minute." },
+      { status: 429, headers: { "Retry-After": "60" } },
+    );
+  }
 
   const system = buildWhySystem(registry, facts);
 
