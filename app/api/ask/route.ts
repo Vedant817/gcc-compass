@@ -43,9 +43,6 @@ function busyResponse() {
 }
 
 export async function POST(req: Request) {
-  const ip = clientIp(req);
-  if (rateLimited(ip)) return busyResponse();
-
   let body: z.infer<typeof Body>;
   try {
     body = Body.parse(await req.json());
@@ -56,6 +53,11 @@ export async function POST(req: Request) {
   if (!llmConfigured()) {
     return NextResponse.json({ aiOff: true });
   }
+
+  // spend limit immediately before the model call: the allowance pays for model
+  // work, not for malformed reads or an AI-off deployment (same policy as /api/why)
+  const ip = clientIp(req);
+  if (rateLimited(ip)) return busyResponse();
 
   const reg = RegistryView.load({
     sources: body.overlay?.sources ?? [],

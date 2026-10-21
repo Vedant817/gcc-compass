@@ -146,14 +146,6 @@ function shapeFacts(facts: z.infer<typeof Extracted>["facts"], text: string) {
 }
 
 export async function POST(req: Request) {
-  const ip = clientIp(req);
-  if (rateLimited(ip)) {
-    return NextResponse.json(
-      { error: "Too many extractions from this address. Wait a minute." },
-      { status: 429, headers: { "Retry-After": "60" } },
-    );
-  }
-
   let body: z.infer<typeof Body>;
   try {
     body = Body.parse(await req.json());
@@ -220,6 +212,18 @@ export async function POST(req: Request) {
 
   if (!llmConfigured()) {
     return NextResponse.json({ aiOff: true });
+  }
+
+  // spend limit immediately before the model call: the allowance pays for the
+  // extraction call, not for malformed body shapes, short pastes or fetch
+  // failures — the fetch itself is bounded by its own 2 MB / 8 s caps
+  // (same policy as /api/why, whose moves this mirrors)
+  const ip = clientIp(req);
+  if (rateLimited(ip)) {
+    return NextResponse.json(
+      { error: "Too many extractions from this address. Wait a minute." },
+      { status: 429, headers: { "Retry-After": "60" } },
+    );
   }
 
   let parsed: unknown;
